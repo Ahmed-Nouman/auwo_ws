@@ -290,6 +290,9 @@ def generate_launch_description():
     dumper_z_arg = DeclareLaunchArgument('dumper_z', default_value='0.5')
     dumper_yaw_arg = DeclareLaunchArgument('dumper_yaw', default_value='0.0')
 
+    # Same Gazebo Transport partition for gz sim + bridge so /excavator/imu and /excavator/points are visible to the bridge
+    set_gz_partition = SetEnvironmentVariable(name='GZ_PARTITION', value='auwo_sim')
+
     # Resource paths for Gazebo (package://excavator_description/... needs share parent)
     user_models = os.path.join(os.path.expanduser("~"), ".gz", "models")
     share_parent = os.path.dirname(pkg_share)  # so package://excavator_description/meshes resolves
@@ -354,7 +357,7 @@ def generate_launch_description():
     )
     gz_gui_delayed = TimerAction(period=3.0, actions=[gz_gui])
 
-    # Spawn excavator (from topic or from file when with truck)
+    # Spawn excavator always from /robot_description (publish_robot_descriptions publishes excavator only)
     spawner = Node(
         package='ros_gz_sim',
         executable='create',
@@ -367,23 +370,7 @@ def generate_launch_description():
             '-x', spawn_x, '-y', spawn_y, '-z', spawn_z,
             '-R', spawn_R, '-P', spawn_P, '-Y', spawn_Y,
         ],
-        condition=UnlessCondition(spawn_dumper),
     )
-    spawner_from_file = Node(
-        package='ros_gz_sim',
-        executable='create',
-        name='create',
-        output='screen',
-        arguments=[
-            '-world', 'default',
-            '-file', excavator_urdf_path,
-            '-name', robot_name,
-            '-allow_renaming', 'true',
-            '-x', spawn_x, '-y', spawn_y, '-z', spawn_z,
-            '-R', spawn_R, '-P', spawn_P, '-Y', spawn_Y,
-        ],
-        condition=IfCondition(spawn_dumper),
-    ) if excavator_urdf_path else None
 
     # Bridge Gazebo sim clock to ROS
     clock_bridge_config = os.path.join(pkg_gazebo_share, 'config', 'clock_bridge.yaml')
@@ -397,14 +384,9 @@ def generate_launch_description():
         }.items(),
     )
 
-    # Spawn and clock bridge delayed so server has loaded the world and exposes /world/default/create
-    spawn_and_bridge = TimerAction(
-        period=6.0,
-        actions=[
-            spawner if spawner_from_file is None else spawner_from_file,
-            clock_bridge,
-        ],
-    )
+    # Spawn first; bridge shortly after
+    spawn_delayed = TimerAction(period=6.0, actions=[spawner])
+    bridge_delayed = TimerAction(period=8.0, actions=[clock_bridge])
 
     # ---- Auto-spawn controllers after spawn has run ----
     controllers_yaml = PathJoinSubstitution([
@@ -428,7 +410,7 @@ def generate_launch_description():
     spawner_arm = ExecuteProcess(
         cmd=[
             'ros2', 'run', 'controller_manager', 'spawner',
-            'arm_position_controller',
+            'arm_trajectory_controller',
             '--controller-manager', '/controller_manager',
             '--param-file', controllers_yaml,
             '--controller-manager-timeout', '30',
@@ -514,12 +496,14 @@ def generate_launch_description():
         physics_engine_arg,
         spawn_x_arg, spawn_y_arg, spawn_z_arg, spawn_R_arg, spawn_P_arg, spawn_Y_arg,
         spawn_dumper_arg, dumper_x_arg, dumper_y_arg, dumper_z_arg, dumper_yaw_arg,
+        set_gz_partition,
         set_gz_resource_path,
         rsp,
         desc_publisher,
         gz_server,
         gz_gui_delayed,
-        spawn_and_bridge,
+        spawn_delayed,
+        bridge_delayed,
         spawn_after_gz,
     ]
     if truck_group is not None:

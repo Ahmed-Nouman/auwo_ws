@@ -106,6 +106,51 @@
     </collision>
   </link>
 
+  <!-- Sensor links (IMU and 3D LiDAR on body/cab) - visible physical sensor geometry -->
+  <link name="sensor_imu_link">
+    <inertial>
+      <mass value="0.02"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="1e-5" iyy="1e-5" izz="1e-5" ixy="0" ixz="0" iyz="0"/>
+    </inertial>
+    <visual name="imu_visual">
+      <geometry><box size="0.12 0.10 0.03"/></geometry>
+      <origin xyz="0 0 0"/>
+      <material name="imu_material">
+        <color rgba="0.9 0.45 0.1 1"/>
+      </material>
+    </visual>
+    <collision name="imu_collision">
+      <geometry><box size="0.12 0.10 0.03"/></geometry>
+      <origin xyz="0 0 0"/>
+    </collision>
+  </link>
+  <link name="sensor_lidar_link">
+    <inertial>
+      <mass value="0.05"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="1e-4" iyy="1e-4" izz="1e-4" ixy="0" ixz="0" iyz="0"/>
+    </inertial>
+    <visual name="lidar_base">
+      <geometry><cylinder radius="0.08" length="0.04"/></geometry>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <material name="lidar_base_material">
+        <color rgba="0.1 0.5 0.85 1"/>
+      </material>
+    </visual>
+    <visual name="lidar_dome">
+      <geometry><sphere radius="0.07"/></geometry>
+      <origin xyz="0 0 0.05" rpy="0 0 0"/>
+      <material name="lidar_dome_material">
+        <color rgba="0.2 0.6 0.9 0.95"/>
+      </material>
+    </visual>
+    <collision name="lidar_collision">
+      <geometry><cylinder radius="0.08" length="0.12"/></geometry>
+      <origin xyz="0 0 0.04" rpy="0 0 0"/>
+    </collision>
+  </link>
+
   <!-- Fixed joint between base_link (root) and base -->
   <joint name="base_to_base_link" type="fixed">
     <parent link="base_link"/>
@@ -150,6 +195,18 @@
     <limit effort="3000.0" lower="-2.395" upper="-0.357" velocity="1.2"/>
   </joint>
 
+  <!-- Body -> sensor links (fixed, above cab) -->
+  <joint name="body_to_imu" type="fixed">
+    <parent link="body"/>
+    <child link="sensor_imu_link"/>
+    <origin xyz="0.3 0 0.25" rpy="0 0 0"/>
+  </joint>
+  <joint name="body_to_lidar" type="fixed">
+    <parent link="body"/>
+    <child link="sensor_lidar_link"/>
+    <origin xyz="0.35 0 0.4" rpy="0 0 0"/>
+  </joint>
+
   <!-- ros2_control interfaces -->
   <ros2_control name="GazeboSimSystem" type="system">
     <hardware>
@@ -187,6 +244,61 @@
             name="gz_ros2_control::GazeboSimROS2ControlPlugin">
       <parameters>$(find excavator_description)/config/controllers.yaml</parameters>
     </plugin>
+  </gazebo>
+
+  <!-- IMU sensor (Gazebo Harmonic); orange so visible in sim -->
+  <gazebo reference="sensor_imu_link">
+    <material>Gazebo/Orange</material>
+    <sensor name="imu_sensor" type="imu">
+      <always_on>true</always_on>
+      <update_rate>100</update_rate>
+      <visualize>true</visualize>
+      <topic>/excavator/imu</topic>
+      <imu>
+        <angular_velocity>
+          <x><noise type="gaussian"><mean>0.0</mean><stddev>0.0002</stddev></noise></x>
+          <y><noise type="gaussian"><mean>0.0</mean><stddev>0.0002</stddev></noise></y>
+          <z><noise type="gaussian"><mean>0.0</mean><stddev>0.0002</stddev></noise></z>
+        </angular_velocity>
+        <linear_acceleration>
+          <x><noise type="gaussian"><mean>0.0</mean><stddev>0.017</stddev></noise></x>
+          <y><noise type="gaussian"><mean>0.0</mean><stddev>0.017</stddev></noise></y>
+          <z><noise type="gaussian"><mean>0.0</mean><stddev>0.017</stddev></noise></z>
+        </linear_acceleration>
+      </imu>
+    </sensor>
+  </gazebo>
+
+  <!-- 3D LiDAR sensor (gpu_lidar, Gazebo Harmonic); blue so visible in sim -->
+  <gazebo reference="sensor_lidar_link">
+    <material>Gazebo/Blue</material>
+    <sensor name="lidar_sensor" type="gpu_lidar">
+      <always_on>true</always_on>
+      <update_rate>10</update_rate>
+      <visualize>true</visualize>
+      <topic>/excavator/points</topic>
+      <lidar>
+        <scan>
+          <horizontal>
+            <samples>360</samples>
+            <resolution>1.0</resolution>
+            <min_angle>-3.14159265</min_angle>
+            <max_angle>3.14159265</max_angle>
+          </horizontal>
+          <vertical>
+            <samples>32</samples>
+            <resolution>1.0</resolution>
+            <min_angle>-0.261799</min_angle>
+            <max_angle>0.261799</max_angle>
+          </vertical>
+        </scan>
+        <range>
+          <min>0.2</min>
+          <max>30.0</max>
+          <resolution>0.01</resolution>
+        </range>
+      </lidar>
+    </sensor>
   </gazebo>
 
 </robot>

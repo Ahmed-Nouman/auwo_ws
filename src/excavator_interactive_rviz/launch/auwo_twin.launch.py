@@ -84,6 +84,44 @@ def generate_launch_description():
         ],
     )
 
+    # --- Trajectory adapter: position commands -> smooth JointTrajectory for arm_trajectory_controller ---
+    trajectory_adapter = Node(
+        package="excavator_teleop",
+        executable="trajectory_command_adapter.py",
+        name="trajectory_command_adapter",
+        output="screen",
+        parameters=[{"use_sim_time": True}],
+    )
+
+    # --- IMU -> Pose for RViz (orientation from /imu at fixed position) ---
+    imu_to_pose = Node(
+        package="excavator_gazebo",
+        executable="imu_to_pose.py",
+        name="imu_to_pose",
+        output="screen",
+        parameters=[
+            {"use_sim_time": True},
+            {"pose_frame_id": "world"},
+            {"position_x": 0.5},
+            {"position_y": 0.0},
+            {"position_z": 1.5},
+        ],
+    )
+
+    # --- Point cloud frame remap: /points (Gazebo frame) -> /points_viz (sensor_lidar_link) for RViz ---
+    points_frame_remap = Node(
+        package="excavator_gazebo",
+        executable="points_frame_remap.py",
+        name="points_frame_remap",
+        output="screen",
+        parameters=[
+            {"use_sim_time": True},
+            {"target_frame_id": "sensor_lidar_link"},
+            {"input_topic": "/points"},
+            {"output_topic": "/points_viz"},
+        ],
+    )
+
     return LaunchDescription(
         [
             DeclareLaunchArgument(
@@ -101,5 +139,8 @@ def generate_launch_description():
             rviz_delayed,
             joint_imarkers,
             twin_router_node,
+            trajectory_adapter,
+            imu_to_pose,
+            points_frame_remap,
         ]
     )

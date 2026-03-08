@@ -33,6 +33,31 @@ Visualization Manager:
     - Class: rviz_default_plugins/TF
       Enabled: true
       Name: TF
+    - Class: rviz_default_plugins/PointCloud2
+      Alpha: 1
+      Color Transformer: FlatColor
+      Enabled: true
+      Name: 3D LiDAR
+      Size (m): 0.02
+      Size (Pixels): 2
+      Style: Points
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Best Effort
+        Value: /points_viz
+    - Class: rviz_default_plugins/Pose
+      Alpha: 1
+      Enabled: true
+      Name: IMU orientation
+      Shape: Axes
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Best Effort
+        Value: /imu_pose
   Global Options:
     Fixed Frame: world
   Views:

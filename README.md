@@ -6,9 +6,9 @@ ROS 2 workspace for the **AUWO** project digital twin: excavator + dump truck in
 
 ## Overview
 
-- **Excavator**: 4-DoF (body, boom, stick, bucket), controlled via `arm_position_controller` (JointGroupPositionController).
+- **Excavator**: 4-DoF (body, boom, stick, bucket), controlled via **arm_trajectory_controller** (JointTrajectoryController) with a trajectory adapter for smooth motion. **IMU** and **3D LiDAR** (gpu_lidar) sensors on the body; topics `/imu` and `/points` bridged from Gazebo.
 - **Dump truck**: Static model (Pete-style) for dump target visualization.
-- **Environment**: Ground plane, sun, and Pete environment mesh in `excavation_site.sdf` (Fuel for ground/sun).
+- **Environment**: Ground plane, sun, and Pete environment mesh in `excavation_site_local.sdf`.
 
 ## Quick start
 
@@ -21,7 +21,19 @@ ros2 launch excavator_interactive_rviz auwo_twin.launch.py
 
 - **Gazebo**: Server loads the **excavation site** world by default (`excavation_site_local.sdf`: ground, sun, and terrain mesh from the pete-driving-articulated-dump-truck source). Excavator and truck spawn after ~6 s. For a plain world without terrain, run with `world:=/path/to/empty.sdf` (path from `ros2 pkg prefix excavator_description`).
 - **RViz**: Fixed frame `world`; RobotModel displays for Excavator and Truck (topics `/excavator_robot_description`, `/truck_robot_description`).
-- **Control**: Use the **Preset Poses** panel: enable motion, choose Simulation, then **Idle** / **Dig** / **Dump** / **Transport**, or **Run Cycle**. Interactive markers also available.
+- **Control**: Use the **Preset Poses** panel: enable motion, choose Simulation, then **Idle** / **Dig** / **Dump** / **Transport**, or **Run Cycle**. Interactive markers also available. Commands go through the trajectory adapter for smooth motion.
+- **Sensors**: `/imu` (sensor_msgs/Imu), `/points` (sensor_msgs/PointCloud2 from 3D LiDAR). See **Visualizing sensors in RViz** below.
+
+## Visualizing sensors in RViz
+
+With `view.rviz` (loaded by the digital twin launch):
+
+- **3D LiDAR**: Display **"3D LiDAR"** (PointCloud2). Topic: `/points`. Shows the excavator’s 3D scan. If nothing appears, ensure the excavator is spawned in Gazebo and the bridge is running; you can set the topic’s **Reliability** to **Reliable** if needed.
+- **IMU orientation**: Display **"IMU orientation"** (Pose). Topic: `/imu_pose`. Shows the excavator’s orientation as axes (published by `imu_to_pose` from `/imu`). Position is fixed (e.g. 0.5, 0, 1.5 in `world`); the axes rotate with the IMU quaternion.
+
+Both displays are enabled by default. To add them manually: **Add** → **By display type** → **PointCloud2** (topic `/points_viz`) or **Pose** (topic `/imu_pose`). Fixed frame: `world`.
+
+**If `/imu` or `/points` have no data:** (1) **Press Play** in the Gazebo window. (2) The launch sets `GZ_PARTITION=auwo_sim` so the bridge and gz sim share the same transport partition; the bridge maps gz `/excavator/imu` and `/excavator/points` to ROS `/imu` and `/points`. (3) To verify gz data from another terminal, use the same partition: `GZ_PARTITION=auwo_sim gz topic -e -t /excavator/imu`.
 
 ## Packages
 
@@ -36,6 +48,12 @@ ros2 launch excavator_interactive_rviz auwo_twin.launch.py
 ## Daily / timeline log (Centria)
 
 *(Keep this section updated as you work; add new entries at the top.)*
+
+### 2026-03-08 (trajectory controller + IMU + 3D LiDAR)
+
+- **Trajectory controller**: Added `arm_trajectory_controller` (JointTrajectoryController) to `controllers.yaml`; Gazebo launch spawns it instead of the position controller. `trajectory_command_adapter` node launched from `auwo_twin.launch.py` converts `/arm_position_controller/commands` to smooth `JointTrajectory` for the trajectory controller.
+- **IMU**: `sensor_imu_link` and `body_to_imu` joint on excavator; Gazebo `<sensor type="imu">` (100 Hz). Bridge: Gazebo IMU → `/imu` (sensor_msgs/Imu). `imu_to_pose` node publishes `/imu_pose` (PoseStamped) for RViz.
+- **3D LiDAR**: `sensor_lidar_link` and `body_to_lidar` joint; Gazebo `<sensor type="gpu_lidar">` (360×32 samples, 30 m range). Bridge: Gazebo PointCloudPacked → `/points` (sensor_msgs/PointCloud2).
 
 ### 2026-03-08 (rollback + Gazebo server-first)
 

@@ -18,9 +18,11 @@
   <!-- Needs the description package -->
   <exec_depend>excavator_description</exec_depend>
 
-  <!-- For publish_robot_descriptions.py -->
+  <!-- For publish_robot_descriptions.py and imu_to_pose.py -->
   <exec_depend>rclpy</exec_depend>
   <exec_depend>std_msgs</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
 
   <!-- Gazebo + bridge + controllers -->
   <exec_depend>ros_gz_sim</exec_depend>
