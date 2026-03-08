@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>excavator_gazebo</name>
+  <version>0.0.1</version>
+  <description>Gazebo Harmonic simulation launch files for the excavator.</description>
+  <maintainer email="ahmed.nouman@example.com">Ahmed Nouman</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <!-- Launch stuff -->
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+
+  <!-- Uses xacro to build robot_description -->
+  <exec_depend>xacro</exec_depend>
+
+  <!-- Needs the description package -->
+  <exec_depend>excavator_description</exec_depend>
+
+  <!-- For publish_robot_descriptions.py -->
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+
+  <!-- Gazebo + bridge + controllers -->
+  <exec_depend>ros_gz_sim</exec_depend>
+  <exec_depend>ros_gz_bridge</exec_depend>
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
+  <exec_depend>controller_manager</exec_depend>
+  <exec_depend>gz_ros2_control</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
+

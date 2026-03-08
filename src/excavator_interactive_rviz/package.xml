@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>excavator_interactive_rviz</name>
+  <version>0.0.1</version>
+  <description>
+    Interactive markers and RViz preset panel for the AUWO excavator digital twin.
+  </description>
+
+  <maintainer email="ahmed.nouman@example.com">Ahmed Nouman</maintainer>
+  <license>Apache-2.0</license>
+
+  <!-- We are ROS 2 / ament_cmake -->
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <!-- C++ / RViz deps (used in C++ code) -->
+  <depend>rclcpp</depend>
+  <depend>std_msgs</depend>
+  <depend>rviz_common</depend>
+
+  <!-- Runtime deps for RViz itself -->
+  <exec_depend>rviz2</exec_depend>
+
+  <!-- Python-side deps (interactive marker nodes + description topics) -->
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>rcl_interfaces</exec_depend>
+  <exec_depend>interactive_markers</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>excavator_cycle</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
+

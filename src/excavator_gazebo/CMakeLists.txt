@@ -1,0 +1,15 @@
+cmake_minimum_required(VERSION 3.16)
+project(excavator_gazebo)
+
+find_package(ament_cmake REQUIRED)
+
+install(PROGRAMS scripts/publish_robot_descriptions.py
+  DESTINATION lib/${PROJECT_NAME})
+
+install(DIRECTORY launch/
+  DESTINATION share/${PROJECT_NAME}/launch)
+install(DIRECTORY config/
+  DESTINATION share/${PROJECT_NAME}/config)
+
+ament_package()
+

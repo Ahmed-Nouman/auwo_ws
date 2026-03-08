@@ -1,0 +1,193 @@
+<?xml version="1.0"?>
+<robot name="excavator" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:property name="mesh_uri" value="package://excavator_description/meshes"/>
+
+  <!-- Massless root -->
+  <link name="base_link"/>
+
+  <!-- BASE (heavier + realistic inertia) -->
+  <link name="base">
+    <inertial>
+      <mass value="300.0"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="80" iyy="80" izz="120" ixy="0" ixz="0" iyz="0"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://excavator_description/meshes/base.dae"/>
+      </geometry>
+      <origin xyz="0 0 0"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://excavator_description/meshes/base.dae"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- BODY / TURRET -->
+  <link name="body">
+    <inertial>
+      <mass value="350.0"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="60" iyy="60" izz="70" ixy="0" ixz="0" iyz="0"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://excavator_description/meshes/body.dae"/>
+      </geometry>
+      <origin xyz="0 0 0"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://excavator_description/meshes/body.dae"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- ARM1 (boom) -->
+  <link name="arm1">
+    <inertial>
+      <mass value="120.0"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="12" iyy="24" izz="22" ixy="0" ixz="0" iyz="0"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://excavator_description/meshes/arm1.dae"/>
+      </geometry>
+      <origin xyz="0 0 0"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://excavator_description/meshes/arm1.dae"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- ARM2 (stick) -->
+  <link name="arm2">
+    <inertial>
+      <mass value="80.0"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="8" iyy="16" izz="14" ixy="0" ixz="0" iyz="0"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://excavator_description/meshes/arm2.dae"/>
+      </geometry>
+      <origin xyz="0 0 0"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://excavator_description/meshes/arm2.dae"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- SHOVEL (bucket) -->
+  <link name="shovel">
+    <inertial>
+      <mass value="60.0"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="4" iyy="6" izz="6" ixy="0" ixz="0" iyz="0"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://excavator_description/meshes/shovel.dae"/>
+      </geometry>
+      <origin xyz="0 0 0"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://excavator_description/meshes/shovel.dae"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- Fixed joint between base_link (root) and base -->
+  <joint name="base_to_base_link" type="fixed">
+    <parent link="base_link"/>
+    <child link="base"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Joints with damping/friction and stronger limits -->
+  <joint name="body_rotation" type="continuous">
+    <parent link="base"/>
+    <child link="body"/>
+    <axis xyz="0 0 1"/>
+    <origin xyz="0.0 0.0 0.6"/>
+    <dynamics damping="8.0" friction="0.5"/>
+    <limit effort="4000.0" velocity="1.5"/>
+  </joint>
+
+  <joint name="arm1_rotation" type="revolute">
+    <parent link="body"/>
+    <child link="arm1"/>
+    <axis xyz="0 1 0"/>
+    <origin xyz="0.933 -0.134 0.302"/>
+    <dynamics damping="10.0" friction="1.5"/>
+    <limit effort="4000.0" lower="-1.308" upper="-0.087" velocity="1.0"/>
+  </joint>
+
+  <joint name="arm2_rotation" type="revolute">
+    <parent link="arm1"/>
+    <child link="arm2"/>
+    <axis xyz="0 1 0"/>
+    <origin xyz="2.586 0 -0.625"/>
+    <dynamics damping="8.0" friction="1.2"/>
+    <limit effort="3500.0" lower="-2.428" upper="-0.085" velocity="1.0"/>
+  </joint>
+
+  <joint name="shovel_rotation" type="revolute">
+    <parent link="arm2"/>
+    <child link="shovel"/>
+    <axis xyz="0 1 0"/>
+    <origin xyz="-1.362 0 -0.154"/>
+    <dynamics damping="6.0" friction="0.8"/>
+    <limit effort="3000.0" lower="-2.395" upper="-0.357" velocity="1.2"/>
+  </joint>
+
+  <!-- ros2_control interfaces -->
+  <ros2_control name="GazeboSimSystem" type="system">
+    <hardware>
+      <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+    </hardware>
+
+    <joint name="body_rotation">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+
+    <joint name="arm1_rotation">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+
+    <joint name="arm2_rotation">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+
+    <joint name="shovel_rotation">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+  </ros2_control>
+
+  <!-- Gazebo ros2_control plugin -->
+  <gazebo>
+    <plugin filename="libgz_ros2_control-system.so"
+            name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+      <parameters>$(find excavator_description)/config/controllers.yaml</parameters>
+    </plugin>
+  </gazebo>
+
+</robot>
+

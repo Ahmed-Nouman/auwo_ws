@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>excavator_teleop</name>
+  <version>0.0.1</version>
+  <description>Keyboard teleoperation node(s) for the excavator.</description>
+  <maintainer email="ahmed.nouman@example.com">Ahmed Nouman</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>trajectory_msgs</exec_depend>
+  <exec_depend>builtin_interfaces</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
+

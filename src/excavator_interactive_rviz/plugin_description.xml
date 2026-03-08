@@ -1,0 +1,11 @@
+<library path="libexcavator_interactive_rviz">
+  <class
+    name="excavator_interactive_rviz/PresetPosesPanel"
+    type="excavator_interactive_rviz::PresetPosesPanel"
+    base_class_type="rviz_common::Panel">
+    <description>
+      Panel with preset poses (Idle, Dig, Dump) for the excavator joints.
+    </description>
+  </class>
+</library>
+

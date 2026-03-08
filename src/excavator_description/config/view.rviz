@@ -1,0 +1,41 @@
+Visualization Manager:
+  Displays:
+    - Class: rviz_default_plugins/RobotModel
+      Alpha: 1
+      Collision Enabled: false
+      Description Source: Topic
+      Description Topic:
+        Depth: 5
+        Durability Policy: Transient Local
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /excavator_robot_description
+      Enabled: true
+      Name: Excavator
+      TF Prefix: ""
+      Update Interval: 0
+      Visual Enabled: true
+    - Class: rviz_default_plugins/RobotModel
+      Alpha: 1
+      Collision Enabled: false
+      Description Source: Topic
+      Description Topic:
+        Depth: 5
+        Durability Policy: Transient Local
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /truck_robot_description
+      Enabled: true
+      Name: Truck
+      TF Prefix: truck
+      Update Interval: 0
+      Visual Enabled: true
+    - Class: rviz_default_plugins/TF
+      Enabled: true
+      Name: TF
+  Global Options:
+    Fixed Frame: world
+  Views:
+    Current:
+      Class: rviz_default_plugins/Orbit
+      Target Frame: world

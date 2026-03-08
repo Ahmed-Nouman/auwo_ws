@@ -1,0 +1,37 @@
+<?xml version="1.0" ?>
+<sdf version="1.9">
+  <world name="default">
+
+    <!-- Required for IMU sensors in models -->
+    <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu"/>
+
+    <gravity>0 0 -9.81</gravity>
+    <physics type="ode">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1</real_time_factor>
+      <real_time_update_rate>1000</real_time_update_rate>
+    </physics>
+
+    <scene>
+      <ambient>0.5 0.45 0.4 1.0</ambient>
+      <background>0.6 0.55 0.5 1.0</background>
+    </scene>
+
+    <!-- Ground plane -->
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/openrobotics/models/Ground Plane</uri>
+    </include>
+
+    <!-- Sun -->
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/openrobotics/models/Sun</uri>
+    </include>
+
+    <!-- Pete environment (from Downloads/pete-driving-articulated-dump-truck, untitled.stl) -->
+    <include>
+      <uri>model://pete_environment</uri>
+      <pose>0 0 0 0 0 0</pose>
+      <name>pete_environment</name>
+    </include>
+  </world>
+</sdf>
