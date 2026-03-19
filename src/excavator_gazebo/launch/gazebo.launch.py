@@ -105,7 +105,12 @@ def _register_local_model(pkg_share: str):
             pass
 
 
-def _write_rviz_description_files(pkg_share: str, excavator_xacro: str, _truck_content_unused: str | None) -> tuple[str, str]:
+def _write_rviz_description_files(
+    excavator_pkg_share: str,
+    excavator_xacro: str,
+    truck_pkg_share: str,
+    _truck_content_unused: str | None,
+) -> tuple[str, str]:
     """Write excavator and truck URDF to temp files for RViz (keep package:// so RViz resolves meshes). Returns (excavator_path, truck_path)."""
     out_excavator = os.path.join(tempfile.gettempdir(), 'excavator_rviz.urdf')
     result = subprocess.run(
@@ -117,10 +122,10 @@ def _write_rviz_description_files(pkg_share: str, excavator_xacro: str, _truck_c
     if result.returncode != 0:
         raise RuntimeError(f"xacro excavator for RViz failed: {result.stderr or result.stdout}")
     out_truck = os.path.join(tempfile.gettempdir(), 'truck_rviz.urdf')
-    truck_xacro = os.path.join(pkg_share, 'urdf', 'truck.urdf.xacro')
+    truck_xacro = os.path.join(truck_pkg_share, 'urdf', 'truck.urdf.xacro')
     if os.path.isfile(truck_xacro):
         result = subprocess.run(
-            ['xacro', truck_xacro, '-o', out_truck],
+            ['xacro', truck_xacro, 'pete_visual_ext:=stl', 'pete_visual_rpy:=0 0 0', '-o', out_truck],
             capture_output=True,
             text=True,
             timeout=10,
@@ -135,9 +140,9 @@ def _write_rviz_description_files(pkg_share: str, excavator_xacro: str, _truck_c
     return out_excavator, out_truck
 
 
-def _generate_truck_urdf(pkg_share: str) -> tuple[str, str]:
+def _generate_truck_urdf(truck_pkg_share: str) -> tuple[str, str]:
     """Run xacro on truck.urdf.xacro; return (path_to_urdf_file, urdf_content)."""
-    xacro_path = os.path.join(pkg_share, 'urdf', 'truck.urdf.xacro')
+    xacro_path = os.path.join(truck_pkg_share, 'urdf', 'truck.urdf.xacro')
     if not os.path.isfile(xacro_path):
         raise FileNotFoundError(f"Truck xacro not found: {xacro_path}")
     out_path = os.path.join(tempfile.gettempdir(), 'truck_excavation_site.urdf')
@@ -151,10 +156,10 @@ def _generate_truck_urdf(pkg_share: str) -> tuple[str, str]:
         raise RuntimeError(f"xacro failed: {result.stderr or result.stdout}")
     with open(out_path, 'r') as f:
         content = f.read()
-    # Resolve package:// so Gazebo finds meshes (e.g. Pete GLB)
-    pkg_share = os.path.dirname(os.path.dirname(xacro_path))  # .../share/excavator_description
+    # Resolve package:// so Gazebo finds meshes
+    pkg_share = os.path.dirname(os.path.dirname(xacro_path))  # .../share/truck_description
     content = content.replace(
-        'package://excavator_description/',
+        'package://truck_description/',
         pkg_share.rstrip('/') + '/',
     )
     with open(out_path, 'w') as f:
@@ -191,12 +196,13 @@ def generate_launch_description():
     pkg_name = 'excavator_description'
     pkg_share = get_package_share_directory(pkg_name)
     pkg_gazebo_share = get_package_share_directory('excavator_gazebo')
+    truck_pkg_share = get_package_share_directory('truck_description')
 
     _register_local_model(pkg_share)
 
     # Generate truck URDF once so spawn_dumper (spawn truck) can use it
     try:
-        truck_urdf_path, truck_urdf_content = _generate_truck_urdf(pkg_share)
+        truck_urdf_path, truck_urdf_content = _generate_truck_urdf(truck_pkg_share)
     except (FileNotFoundError, RuntimeError):
         truck_urdf_path = None
         truck_urdf_content = None
@@ -205,7 +211,7 @@ def generate_launch_description():
     excavator_xacro = os.path.join(pkg_share, 'urdf', 'excavator.urdf.xacro')
     try:
         excavator_rviz_path, truck_rviz_path = _write_rviz_description_files(
-            pkg_share, excavator_xacro, truck_urdf_content or ''
+            pkg_share, excavator_xacro, truck_pkg_share, truck_urdf_content or ''
         )
     except (FileNotFoundError, RuntimeError) as e:
         excavator_rviz_path = os.path.join(tempfile.gettempdir(), 'excavator_rviz.urdf')
@@ -215,9 +221,13 @@ def generate_launch_description():
             subprocess.run(['xacro', excavator_xacro, 'use_sim:=true', '-o', excavator_rviz_path],
                           capture_output=True, timeout=10)
         if not os.path.isfile(truck_rviz_path):
-            truck_xacro = os.path.join(pkg_share, 'urdf', 'truck.urdf.xacro')
+            truck_xacro = os.path.join(truck_pkg_share, 'urdf', 'truck.urdf.xacro')
             if os.path.isfile(truck_xacro):
-                subprocess.run(['xacro', truck_xacro, '-o', truck_rviz_path], capture_output=True, timeout=10)
+                subprocess.run(
+                    ['xacro', truck_xacro, 'pete_visual_ext:=stl', 'pete_visual_rpy:=0 0 0', '-o', truck_rviz_path],
+                    capture_output=True,
+                    timeout=10,
+                )
 
     # Excavator URDF with resolved package:// for Gazebo when spawning with truck
     excavator_model = excavator_xacro
@@ -385,8 +395,8 @@ def generate_launch_description():
     )
 
     # Spawn first; bridge shortly after
-    spawn_delayed = TimerAction(period=6.0, actions=[spawner])
-    bridge_delayed = TimerAction(period=8.0, actions=[clock_bridge])
+    spawn_delayed = TimerAction(period=4.0, actions=[spawner])
+    bridge_delayed = TimerAction(period=6.0, actions=[clock_bridge])
 
     # ---- Auto-spawn controllers after spawn has run ----
     controllers_yaml = PathJoinSubstitution([
@@ -420,7 +430,7 @@ def generate_launch_description():
     )
 
     # Controllers after spawn and bridge (9s so /world/default/create and /clock are available)
-    spawn_after_gz = TimerAction(period=9.0, actions=[spawner_jsb, spawner_arm])
+    spawn_after_gz = TimerAction(period=7.0, actions=[spawner_jsb, spawner_arm])
 
     # ---- Dump truck (when spawn_dumper is true and truck URDF was generated) ----
     truck_group_actions = []
@@ -447,6 +457,9 @@ def generate_launch_description():
             executable='robot_state_publisher',
             name='robot_state_publisher_truck',
             output='screen',
+            # Do not publish to /truck_robot_description: RViz uses that topic from
+            # publish_robot_descriptions (STL). RSP only needs TF; GLB URDF stays off RViz path.
+            remappings=[('robot_description', '/truck_robot_description_internal')],
             parameters=[{
                 'robot_description': truck_urdf_content,
                 'use_sim_time': use_sim_time,
@@ -491,6 +504,9 @@ def generate_launch_description():
         actions=truck_group_actions,
     ) if truck_group_actions else None
 
+    # Delay truck-related spawn/actions so excavator spawn from /robot_description is deterministic first.
+    truck_group_delayed = TimerAction(period=6.0, actions=[truck_group]) if truck_group is not None else None
+
     launch_actions = [
         world_arg, model_arg, robot_name_arg, use_sim_time_arg, headless_arg,
         physics_engine_arg,
@@ -506,8 +522,8 @@ def generate_launch_description():
         bridge_delayed,
         spawn_after_gz,
     ]
-    if truck_group is not None:
-        launch_actions.append(truck_group)
+    if truck_group_delayed is not None:
+        launch_actions.append(truck_group_delayed)
 
     return LaunchDescription(launch_actions)
 
