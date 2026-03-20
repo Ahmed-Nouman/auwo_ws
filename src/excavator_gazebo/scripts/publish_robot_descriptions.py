@@ -79,39 +79,15 @@ def main(args=None):
     pub_truck = node.create_publisher(String, "/truck_robot_description", qos)
     pub_robot_description = node.create_publisher(String, "/robot_description", qos)
 
-    def publish_all():
-        if excavator:
-            msg = String()
-            msg.data = excavator
-            pub_excavator.publish(msg)
-            # Only publish to /robot_description if this URDF has ros2_control (excavator has it, truck does not)
-            if "ros2_control" in excavator:
-                pub_robot_description.publish(msg)
-        # Always publish truck so topic exists (full URDF or minimal)
-        msg = String()
-        msg.data = truck if truck else MINIMAL_TRUCK_URDF
-        pub_truck.publish(msg)
-
-    # Publish immediately for RViz
+    # Publish immediately for RViz and control; TRANSIENT_LOCAL QoS serves late subscribers.
     if excavator:
-        pub_excavator.publish(String(data=excavator))
+        msg = String(data=excavator)
+        pub_excavator.publish(msg)
+        # Only publish to /robot_description if this URDF has ros2_control (excavator has it, truck does not)
+        if "ros2_control" in excavator:
+            pub_robot_description.publish(msg)
     pub_truck.publish(String(data=truck if truck else MINIMAL_TRUCK_URDF))
-    node.get_logger().info("Published robot descriptions (excavator and truck)")
-
-    # Keep /robot_description with excavator (has ros2_control); something may publish truck there on spawn
-    def publish_robot_description_for_control():
-        if excavator and "ros2_control" in excavator:
-            pub_robot_description.publish(String(data=excavator))
-
-    publish_robot_description_for_control()
-    node.create_timer(3.0, publish_robot_description_for_control)
-    node.create_timer(5.0, publish_robot_description_for_control)
-    node.create_timer(7.0, publish_robot_description_for_control)
-    # Every 1s overwrite /robot_description so gz_ros_control always gets excavator if it subscribes late
-    node.create_timer(1.0, publish_robot_description_for_control)
-
-    # Republish every 2s for RViz
-    node.create_timer(2.0, publish_all)
+    node.get_logger().info("Published robot descriptions once (excavator, truck, /robot_description)")
 
     try:
         rclpy.spin(node)

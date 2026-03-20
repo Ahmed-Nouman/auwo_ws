@@ -1,9 +1,10 @@
 <?xml version="1.0"?>
 
 <robot name="truck" xmlns:xacro="http://ros.org/wiki/xacro">
+  <!-- Visual mesh extension: glb for Gazebo (textures), stl for RViz (Ogre loads STL reliably). -->
+  <xacro:arg name="pete_visual_ext" default="glb" />
   <xacro:property name="pi" value="3.1415926535897931" />
-  <!-- Pete articulated dump truck (GLB), Blender-exported truck only -->
-  <xacro:property name="pete_mesh_uri" value="package://excavator_description/meshes/truck/source/pete_dump_truck.glb" />
+  <xacro:property name="pete_mesh_uri" value="package://excavator_description/meshes/truck/source/pete_dump_truck.$(arg pete_visual_ext)" />
   <!-- Fallback: jsk_mbzirc_common (set use_pete to false in xacro or use mesh_uri for legacy) -->
   <xacro:property name="mesh_uri" value="package://jsk_mbzirc_common/gazebo_model/models/truck/meshes" />
   <!-- 1 = Pete GLB only (no tires/heliport), 0 = legacy jsk model -->

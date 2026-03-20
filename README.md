@@ -19,8 +19,8 @@ source install/setup.bash
 ros2 launch excavator_interactive_rviz auwo_twin.launch.py
 ```
 
-- **Gazebo**: Server loads the **excavation site** world by default (`excavation_site_local.sdf`). The **GUI** starts ~3 s after the server (`gz sim -g`); excavator/truck **create** nodes run with the server (see `excavator_gazebo` launch). Optional: `gazebo_unified_gui:=true`, `gazebo_verbose:=0–4`. For a plain world, pass `world:=/path/to/empty.sdf`.
-- **RViz**: Fixed frame `world`; RobotModel displays for Excavator and Truck (topics `/excavator_robot_description`, `/truck_robot_description`).
+- **Gazebo**: Server loads the **excavation site** world by default (`excavation_site_local.sdf`: ground, sun, and terrain mesh from the Pete dump-truck source). The **GUI** starts ~3 s after the server (`gz sim -g`); excavator spawns at ~4 s, truck at ~6 s. Optional: `gazebo_unified_gui:=true`, `gazebo_verbose:=0–4`. For a plain world without terrain, pass `world:=/path/to/empty.sdf`.
+- **RViz**: Fixed frame `world`; RobotModel displays for Excavator and Truck (topics `/excavator_robot_description`, `/truck_robot_description`). The truck RViz URDF uses **`pete_dump_truck.stl`** for reliable Ogre loading; Gazebo spawn still uses the GLB URDF.
 - **Control**: Use the **Preset Poses** panel: enable motion, choose Simulation, then **Idle** / **Dig** / **Dump** / **Transport**, or **Run Cycle**. Interactive markers also available. Commands go through the trajectory adapter for smooth motion.
 - **Sensors**: `/imu` (sensor_msgs/Imu), `/points` (sensor_msgs/PointCloud2 from 3D LiDAR). See **Visualizing sensors in RViz** below.
 
@@ -39,7 +39,8 @@ Both displays are enabled by default. To add them manually: **Add** → **By dis
 
 | Package | Role |
 |--------|-----|
-| `excavator_description` | URDF/xacro, meshes, world SDF, controller config, RViz config |
+| `excavator_description` | Excavator URDF/xacro, meshes, world SDF, controller config, RViz config |
+| `truck_description` | Dump truck URDF/xacro and meshes (GLB for Gazebo, STL for RViz) |
 | `excavator_gazebo` | Gazebo launch, robot spawn, clock/sensor bridge, publish_robot_descriptions |
 | `excavator_interactive_rviz` | RViz launch, interactive markers, twin router |
 | `excavator_teleop` | Teleop script |
@@ -144,7 +145,20 @@ The digital twin launch **`auwo_twin.launch.py`** stays on the classic stack (tw
 
 *One block per calendar day, **reverse chronological order** (newest → oldest). Add a new `### YYYY-MM-DD` **immediately below this paragraph** when you log work.*
 
+### 2026-03-20 (truck_description package, spawn reduction, RViz orientation)
+
+- **truck_description package**: New `truck_description` package with dump truck URDF/xacro and meshes (GLB for Gazebo, STL for RViz). Truck assets moved from `excavator_description`; `excavator_description` no longer installs truck meshes.
+- **Spawn time reduction**: Excavator spawn 6 s → 4 s; clock bridge 8 s → 6 s; controllers 9 s → 7 s; truck group delay 8 s → 6 s.
+- **RViz truck orientation**: Added `pete_visual_rpy` xacro arg; RViz URDF uses `pete_visual_rpy:=0 0 0` for STL (Z-up) so truck matches Gazebo orientation. GLB keeps default roll +90° for Gazebo spawn.
+- **Gazebo spawn race fix**: Truck RSP remapped to `/truck_robot_description_internal`; truck group delayed to 6 s so excavator spawn from `/robot_description` is deterministic first.
+
+### 2026-03-20 (RViz truck STL visual)
+
+- **Truck RViz mesh**: `truck.urdf.xacro` gains `pete_visual_ext` (default `glb`). Gazebo launch generates `/tmp/truck_rviz.urdf` with `pete_visual_ext:=stl` so RViz uses `pete_dump_truck.stl`. Gazebo spawn still uses default GLB. Truck `robot_state_publisher` remapped to `/truck_robot_description_internal` so it does not overwrite `/truck_robot_description` with the GLB string.
+
 ### 2026-03-20
+
+### 2026-03-08 (trajectory controller + IMU + 3D LiDAR)
 
 - **`bucket_moveit.launch.py`**: forwards **`gazebo_unified_gui`**, **`gazebo_verbose`**, and **`headless`** to **`excavator_gazebo`**.
 - **`gazebo.launch.py`**: **`gazebo_unified_gui`** (default **`false`**) — set **`true`** for single-process **`gz sim`** if split GUI triggers OS “not responding”. **`gazebo_verbose`** (default **`1`**) for **`gz sim -v`** (0–4; previously hard-coded **`4`**).
