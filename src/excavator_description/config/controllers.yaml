@@ -36,3 +36,7 @@ arm_trajectory_controller:
     state_publish_rate: 50.0
     action_monitor_rate: 20.0
     allow_partial_joints_goal: false
+    # MoveIt time-parameterized trajectories often end with small non-zero velocities; JTC rejects those goals otherwise.
+    allow_nonzero_velocity_at_trajectory_end: true
+    constraints:
+      goal_time: 0.5

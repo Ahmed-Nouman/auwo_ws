@@ -1,0 +1,13 @@
+# IMU + 3D LiDAR (GZ_PARTITION=auwo_sim so bridge and gz sim share transport)
+- ros_topic_name: "/imu"
+  gz_topic_name: "/excavator/imu"
+  ros_type_name: "sensor_msgs/msg/Imu"
+  gz_type_name: "gz.msgs.IMU"
+  direction: GZ_TO_ROS
+
+# gpu_lidar often publishes PointCloudPacked on <topic>/points
+- ros_topic_name: "/points"
+  gz_topic_name: "/excavator/points/points"
+  ros_type_name: "sensor_msgs/msg/PointCloud2"
+  gz_type_name: "gz.msgs.PointCloudPacked"
+  direction: GZ_TO_ROS

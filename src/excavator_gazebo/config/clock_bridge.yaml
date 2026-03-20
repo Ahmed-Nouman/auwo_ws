@@ -1,20 +1,7 @@
-# Bridge Gazebo sim clock to ROS /clock so controller_manager advances
+# Clock only — keep separate from sensors so LiDAR/IMU bridge issues cannot block /clock.
+# Gazebo Harmonic publishes sim time on /clock (and /world/<name>/clock); upstream ros_gz_bridge uses /clock.
 - ros_topic_name: "/clock"
-  gz_topic_name: "/world/default/clock"
+  gz_topic_name: "/clock"
   ros_type_name: "rosgraph_msgs/msg/Clock"
   gz_type_name: "gz.msgs.Clock"
-  direction: GZ_TO_ROS
-
-# Bridge excavator IMU (GZ_PARTITION=auwo_sim so bridge and gz sim share partition)
-- ros_topic_name: "/imu"
-  gz_topic_name: "/excavator/imu"
-  ros_type_name: "sensor_msgs/msg/Imu"
-  gz_type_name: "gz.msgs.IMU"
-  direction: GZ_TO_ROS
-
-# Bridge excavator 3D LiDAR. In Harmonic gpu_lidar often publishes PointCloudPacked to <topic>/points sub-topic.
-- ros_topic_name: "/points"
-  gz_topic_name: "/excavator/points/points"
-  ros_type_name: "sensor_msgs/msg/PointCloud2"
-  gz_type_name: "gz.msgs.PointCloudPacked"
   direction: GZ_TO_ROS

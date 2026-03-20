@@ -192,7 +192,8 @@
     <axis xyz="0 1 0"/>
     <origin xyz="-1.362 0 -0.154"/>
     <dynamics damping="6.0" friction="0.8"/>
-    <limit effort="3000.0" lower="-2.395" upper="-0.357" velocity="1.2"/>
+    <!-- Lower bound slightly below nominal URDF so Gazebo start pose / solver drift stays inside MoveIt bounds -->
+    <limit effort="3000.0" lower="-2.60" upper="-0.357" velocity="1.2"/>
   </joint>
 
   <!-- Body -> sensor links (fixed, above cab) -->

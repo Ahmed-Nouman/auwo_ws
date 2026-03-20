@@ -22,6 +22,7 @@ from launch.substitutions import (
     Command,
     PathJoinSubstitution,
     FindExecutable,
+    PythonExpression,
 )
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
@@ -236,6 +237,8 @@ def generate_launch_description():
     robot_name = LaunchConfiguration('robot_name')
     use_sim_time = LaunchConfiguration('use_sim_time')
     headless = LaunchConfiguration('headless')
+    unified_gui = LaunchConfiguration('gazebo_unified_gui')
+    gazebo_verbose = LaunchConfiguration('gazebo_verbose')
     physics_engine = LaunchConfiguration('physics_engine')  # selector
     spawn_dumper = LaunchConfiguration('spawn_dumper')
 
@@ -265,6 +268,20 @@ def generate_launch_description():
     robot_name_arg = DeclareLaunchArgument('robot_name', default_value='excavator')
     use_sim_time_arg = DeclareLaunchArgument('use_sim_time', default_value='true')
     headless_arg = DeclareLaunchArgument('headless', default_value='false')
+
+    gazebo_unified_gui_arg = DeclareLaunchArgument(
+        'gazebo_unified_gui',
+        default_value='false',
+        description=(
+            'If true (and headless:=false), run one gz sim process (GUI+server). '
+            'If false, use gz sim -s then gz sim -g (default; reliable ros_gz_sim create).'
+        ),
+    )
+    gazebo_verbose_arg = DeclareLaunchArgument(
+        'gazebo_verbose',
+        default_value='1',
+        description='Gazebo log verbosity for gz sim -v (0–4). Lower = less console spam.',
+    )
 
     physics_engine_arg = DeclareLaunchArgument(
         'physics_engine',
@@ -344,10 +361,12 @@ def generate_launch_description():
         }],
     )
 
-    # Start Gazebo server with world file so the world loads immediately (avoids "waiting for GUI" empty scene).
-    # Then start GUI to connect to the running server; spawn and bridge run after server is up.
+    # Split: server (-s) + delayed GUI (-g). Unified: single process (some GPUs/desktops are smoother).
     gz_server = ExecuteProcess(
-        cmd=['gz', 'sim', '-s', '-v', '4', '--physics-engine', physics_engine, world],
+        cmd=[
+            'gz', 'sim', '-s', '-r', '-v', gazebo_verbose,
+            '--physics-engine', physics_engine, world,
+        ],
         output='screen',
     )
     gz_gui = ExecuteProcess(
@@ -356,37 +375,105 @@ def generate_launch_description():
         condition=UnlessCondition(headless),
     )
     gz_gui_delayed = TimerAction(period=3.0, actions=[gz_gui])
-
-    # Spawn excavator always from /robot_description (publish_robot_descriptions publishes excavator only)
-    spawner = Node(
-        package='ros_gz_sim',
-        executable='create',
-        name='create',
-        output='screen',
-        arguments=[
-            '-topic', 'robot_description',
-            '-name', robot_name,
-            '-allow_renaming', 'true',
-            '-x', spawn_x, '-y', spawn_y, '-z', spawn_z,
-            '-R', spawn_R, '-P', spawn_P, '-Y', spawn_Y,
+    gz_unified = ExecuteProcess(
+        cmd=[
+            'gz', 'sim', '-r', '-v', gazebo_verbose,
+            '--physics-engine', physics_engine, world,
         ],
+        output='screen',
     )
 
-    # Bridge Gazebo sim clock to ROS
+    use_unified_gui = PythonExpression(
+        [
+            "'",
+            headless,
+            "'.lower() not in ('true', '1') and '",
+            unified_gui,
+            "'.lower() in ('true', '1')",
+        ]
+    )
+    use_split_gui = PythonExpression(
+        [
+            "'",
+            headless,
+            "'.lower() in ('true', '1') or '",
+            unified_gui,
+            "'.lower() not in ('true', '1')",
+        ]
+    )
+    gz_unified_group = GroupAction(
+        actions=[gz_unified],
+        condition=IfCondition(use_unified_gui),
+    )
+    gz_split_group = GroupAction(
+        actions=[gz_server, gz_gui_delayed],
+        condition=IfCondition(use_split_gui),
+    )
+
+    # Spawn excavator from the pre-resolved URDF file (package:// already replaced).
+    # Using -file avoids gz transport service-discovery issues that -topic can hit.
+    if excavator_urdf_path is not None:
+        spawner = Node(
+            package='ros_gz_sim',
+            executable='create',
+            name='create',
+            output='screen',
+            arguments=[
+                '-world', 'default',
+                '-file', excavator_urdf_path,
+                '-name', robot_name,
+                '-allow_renaming', 'true',
+                '-x', spawn_x, '-y', spawn_y, '-z', spawn_z,
+                '-R', spawn_R, '-P', spawn_P, '-Y', spawn_Y,
+            ],
+        )
+    else:
+        spawner = Node(
+            package='ros_gz_sim',
+            executable='create',
+            name='create',
+            output='screen',
+            arguments=[
+                '-world', 'default',
+                '-topic', 'robot_description',
+                '-name', robot_name,
+                '-allow_renaming', 'true',
+                '-x', spawn_x, '-y', spawn_y, '-z', spawn_z,
+                '-R', spawn_R, '-P', spawn_P, '-Y', spawn_Y,
+            ],
+        )
+
+    # Bridge nodes must use use_sim_time:=false so they do not block waiting for /clock while publishing it.
     clock_bridge_config = os.path.join(pkg_gazebo_share, 'config', 'clock_bridge.yaml')
-    clock_bridge = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource([
-            get_package_share_directory('ros_gz_bridge'), '/launch/ros_gz_bridge.launch.py'
-        ]),
-        launch_arguments={
-            'bridge_name': 'clock_bridge',
-            'config_file': clock_bridge_config,
-        }.items(),
+    clock_bridge = Node(
+        package='ros_gz_bridge',
+        executable='bridge_node',
+        name='auwo_clock_bridge',
+        output='screen',
+        parameters=[
+            {'use_sim_time': False, 'config_file': clock_bridge_config},
+        ],
+        additional_env={'GZ_PARTITION': 'auwo_sim', 'IGN_PARTITION': 'auwo_sim'},
+        arguments=['--ros-args', '--log-level', 'info'],
+    )
+    sensors_bridge_config = os.path.join(pkg_gazebo_share, 'config', 'sensors_bridge.yaml')
+    sensors_bridge = Node(
+        package='ros_gz_bridge',
+        executable='bridge_node',
+        name='auwo_sensor_bridge',
+        output='screen',
+        parameters=[
+            {'use_sim_time': False, 'config_file': sensors_bridge_config},
+        ],
+        additional_env={'GZ_PARTITION': 'auwo_sim', 'IGN_PARTITION': 'auwo_sim'},
+        arguments=['--ros-args', '--log-level', 'info'],
     )
 
-    # Spawn first; bridge shortly after
-    spawn_delayed = TimerAction(period=6.0, actions=[spawner])
-    bridge_delayed = TimerAction(period=8.0, actions=[clock_bridge])
+    # Spawn immediately — gz transport service discovery requires the create node
+    # to join the network alongside the server to catch multicast announcements.
+    # The create node retries internally until the service appears.
+    bridge_clock_early = TimerAction(period=1.5, actions=[clock_bridge])
+    bridge_sensors_delayed = TimerAction(period=5.0, actions=[sensors_bridge])
 
     # ---- Auto-spawn controllers after spawn has run ----
     controllers_yaml = PathJoinSubstitution([
@@ -419,8 +506,8 @@ def generate_launch_description():
         output='screen'
     )
 
-    # Controllers after spawn and bridge (9s so /world/default/create and /clock are available)
-    spawn_after_gz = TimerAction(period=9.0, actions=[spawner_jsb, spawner_arm])
+    # Controllers after model is in world and /clock bridge is up.
+    spawn_after_gz = TimerAction(period=12.0, actions=[spawner_jsb, spawner_arm])
 
     # ---- Dump truck (when spawn_dumper is true and truck URDF was generated) ----
     truck_group_actions = []
@@ -493,6 +580,8 @@ def generate_launch_description():
 
     launch_actions = [
         world_arg, model_arg, robot_name_arg, use_sim_time_arg, headless_arg,
+        gazebo_unified_gui_arg,
+        gazebo_verbose_arg,
         physics_engine_arg,
         spawn_x_arg, spawn_y_arg, spawn_z_arg, spawn_R_arg, spawn_P_arg, spawn_Y_arg,
         spawn_dumper_arg, dumper_x_arg, dumper_y_arg, dumper_z_arg, dumper_yaw_arg,
@@ -500,10 +589,11 @@ def generate_launch_description():
         set_gz_resource_path,
         rsp,
         desc_publisher,
-        gz_server,
-        gz_gui_delayed,
-        spawn_delayed,
-        bridge_delayed,
+        gz_unified_group,
+        gz_split_group,
+        spawner,
+        bridge_clock_early,
+        bridge_sensors_delayed,
         spawn_after_gz,
     ]
     if truck_group is not None:
