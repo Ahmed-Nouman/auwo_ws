@@ -52,11 +52,15 @@ Both displays are enabled by default. To add them manually: **Add** → **By dis
 **All-in-one (Gazebo + MoveIt):** pass **`include_gazebo:=true`** and **`use_sim_time:=true`** (defaults are mock-only). Gazebo (**split** by default: `gz sim -s -r` server, then `gz sim -g` GUI after 3 s) + **event-driven** `move_group` (starts after `/arm_trajectory_controller/follow_joint_trajectory` exists) + MoveIt RViz:
 
 ```bash
+source /opt/ros/${ROS_DISTRO}/setup.bash
+colcon build --packages-select excavator_gazebo excavator_moveit_config --symlink-install
 source install/setup.bash
 ros2 launch excavator_moveit_config bucket_moveit.launch.py include_gazebo:=true use_sim_time:=true
 ```
 
 **Mock only (no Gazebo window):** omit those flags (same as `include_gazebo:=false`).
+
+If Gazebo starts but `move_group` / RViz never launches, first rebuild + re-source as above so installed launch files are in sync with source changes.
 
 **If Gazebo opens but stays empty / terminal waits forever on controllers:** ensure **`GZ_PARTITION`** matches across processes (fixed in `excavator_gazebo` for `gz sim`, bridges, and `ros_gz_sim create`). Controllers are spawned **sequentially** (`joint_state_broadcaster` then `arm_trajectory_controller`) to avoid `controller_manager` races. For a lighter world while testing, use **`use_excavation_site:=false`** and optionally **`world:=$(ros2 pkg prefix excavator_description)/share/excavator_description/worlds/empty.sdf`**.
 
