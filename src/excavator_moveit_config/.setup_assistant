@@ -1,0 +1,7 @@
+moveit_setup_assistant_config:
+  urdf:
+    package: excavator_description
+    relative_path: urdf/excavator.urdf.xacro
+    xacro_args: use_sim:=true
+  srdf:
+    relative_path: config/excavator.srdf

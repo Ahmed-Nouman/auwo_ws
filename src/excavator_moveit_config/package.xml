@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>excavator_moveit_config</name>
+  <version>0.1.0</version>
+  <description>MoveIt2 configuration for the AUWO excavator (4-DoF arm + bucket).</description>
+
+  <maintainer email="ahmed.nouman@example.com">Ahmed Nouman</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <exec_depend>excavator_description</exec_depend>
+  <exec_depend>excavator_gazebo</exec_depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>moveit_configs_utils</exec_depend>
+  <exec_depend>moveit_ros_move_group</exec_depend>
+  <exec_depend>moveit_ros_visualization</exec_depend>
+  <exec_depend>moveit_simple_controller_manager</exec_depend>
+  <exec_depend>moveit_kinematics</exec_depend>
+  <exec_depend>moveit_planners_ompl</exec_depend>
+  <exec_depend>rviz2</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>rcl_interfaces</exec_depend>
+  <exec_depend>rosgraph_msgs</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>control_msgs</exec_depend>
+  <exec_depend>controller_manager</exec_depend>
+  <exec_depend>controller_manager_msgs</exec_depend>
+  <exec_depend>ros2_control</exec_depend>
+  <exec_depend>ros2_controllers</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>shape_msgs</exec_depend>
+  <exec_depend>moveit_msgs</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

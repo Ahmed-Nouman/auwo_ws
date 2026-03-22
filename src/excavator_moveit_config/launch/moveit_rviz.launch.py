@@ -4,21 +4,17 @@ import os
 from ament_index_python.packages import PackageNotFoundError, get_package_prefix
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
+from launch.actions import DeclareLaunchArgument, OpaqueFunction
+from launch.conditions import IfCondition, UnlessCondition
 from launch.substitutions import LaunchConfiguration
 
-from launch_ros.parameter_descriptions import ParameterValue
+from launch_ros.actions import Node
 
 from moveit_configs_utils import MoveItConfigsBuilder
-from moveit_configs_utils.launch_utils import DeclareBooleanLaunchArg, add_debuggable_node
+from moveit_configs_utils.launch_utils import DeclareBooleanLaunchArg
 
 
-def generate_launch_description():
-    builder = MoveItConfigsBuilder("excavator", package_name="excavator_moveit_config")
-    builder.planning_pipelines(pipelines=["ompl"], load_all=False)
-    moveit_config = builder.to_moveit_configs()
-
-    # Same as move_group: thin overlays sometimes miss OMPL plugin paths for RViz/MotionPlanning.
+def _ompl_extra_env():
     extra_env = {"DISPLAY": os.environ.get("DISPLAY", "")}
     try:
         ompl_prefix = get_package_prefix("moveit_planners_ompl")
@@ -28,6 +24,74 @@ def generate_launch_description():
         )
     except PackageNotFoundError:
         pass
+    return extra_env
+
+
+def _opaque_rviz(context, *args, **kwargs):
+    use_mock = context.launch_configurations.get("use_mock_hardware", "false").lower() in (
+        "true",
+        "1",
+    )
+    builder = MoveItConfigsBuilder("excavator", package_name="excavator_moveit_config")
+    builder.planning_pipelines(pipelines=["ompl"], load_all=False)
+    if use_mock:
+        builder.robot_description(mappings={"use_mock_hardware": "true"})
+    moveit_config = builder.to_moveit_configs()
+
+    use_sim = context.launch_configurations.get("use_sim_time", "true").lower() in (
+        "true",
+        "1",
+    )
+    rviz_config = context.launch_configurations.get(
+        "rviz_config",
+        str(moveit_config.package_path / "config/moveit.rviz"),
+    )
+    joint_states_topic = context.launch_configurations.get(
+        "joint_states_topic",
+        "/joint_states",
+    )
+
+    rviz_parameters = [
+        moveit_config.robot_description,
+        moveit_config.robot_description_semantic,
+        moveit_config.planning_pipelines,
+        moveit_config.robot_description_kinematics,
+        moveit_config.joint_limits,
+        {"use_sim_time": use_sim},
+    ]
+
+    extra_env = _ompl_extra_env()
+
+    standard_node = Node(
+        package="rviz2",
+        executable="rviz2",
+        output="log",
+        respawn=False,
+        arguments=["-d", rviz_config],
+        parameters=rviz_parameters,
+        remappings=[("joint_states", joint_states_topic)],
+        additional_env=extra_env,
+        condition=UnlessCondition(LaunchConfiguration("debug")),
+    )
+    debug_node = Node(
+        package="rviz2",
+        executable="rviz2",
+        output="log",
+        respawn=False,
+        arguments=["-d", rviz_config],
+        parameters=rviz_parameters,
+        remappings=[("joint_states", joint_states_topic)],
+        additional_env=extra_env,
+        prefix=["gdb --ex run --args"],
+        condition=IfCondition(LaunchConfiguration("debug")),
+    )
+    return [standard_node, debug_node]
+
+
+def generate_launch_description():
+    builder = MoveItConfigsBuilder("excavator", package_name="excavator_moveit_config")
+    builder.planning_pipelines(pipelines=["ompl"], load_all=False)
+    default_rviz = str(builder.to_moveit_configs().package_path / "config/moveit.rviz")
 
     ld = LaunchDescription()
 
@@ -38,37 +102,27 @@ def generate_launch_description():
             description="Use Gazebo /clock",
         )
     )
+    ld.add_action(
+        DeclareLaunchArgument(
+            "use_mock_hardware",
+            default_value="false",
+            description="Match move_group: mock URDF for RViz-only demos.",
+        )
+    )
     ld.add_action(DeclareBooleanLaunchArg("debug", default_value=False))
     ld.add_action(
         DeclareLaunchArgument(
             "rviz_config",
-            default_value=str(moveit_config.package_path / "config/moveit.rviz"),
+            default_value=default_rviz,
+        )
+    )
+    ld.add_action(
+        DeclareLaunchArgument(
+            "joint_states_topic",
+            default_value="/joint_states",
+            description="Joint state topic for RViz robot model / MotionPlanning plugin",
         )
     )
 
-    # RViz MotionPlanning needs the same URDF/SRDF as move_group (not only kinematics).
-    rviz_parameters = [
-        moveit_config.robot_description,
-        moveit_config.robot_description_semantic,
-        moveit_config.planning_pipelines,
-        moveit_config.robot_description_kinematics,
-        moveit_config.joint_limits,
-        {
-            "use_sim_time": ParameterValue(
-                LaunchConfiguration("use_sim_time"), value_type=bool
-            )
-        },
-    ]
-
-    add_debuggable_node(
-        ld,
-        package="rviz2",
-        executable="rviz2",
-        output="log",
-        respawn=False,
-        arguments=["-d", LaunchConfiguration("rviz_config")],
-        parameters=rviz_parameters,
-        additional_env=extra_env,
-    )
-
+    ld.add_action(OpaqueFunction(function=_opaque_rviz))
     return ld

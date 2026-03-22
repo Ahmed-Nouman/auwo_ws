@@ -1,6 +1,9 @@
 <?xml version="1.0"?>
 <robot name="excavator" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
+  <!-- When true: mock_components/GenericSystem for RViz-only MoveIt (no Gazebo). -->
+  <xacro:arg name="use_mock_hardware" default="false"/>
+
   <xacro:property name="mesh_uri" value="package://excavator_description/meshes"/>
 
   <!-- Massless root -->
@@ -159,13 +162,16 @@
   </joint>
 
   <!-- Joints with damping/friction and stronger limits -->
-  <joint name="body_rotation" type="continuous">
+  <!-- Revolute with wide limits (not continuous): MoveIt + JointTrajectoryController validate the
+       first waypoint against /joint_states; continuous joints often report large accumulated
+       angles while planned trajectories use a different branch → instant "start deviates" abort. -->
+  <joint name="body_rotation" type="revolute">
     <parent link="base"/>
     <child link="body"/>
     <axis xyz="0 0 1"/>
     <origin xyz="0.0 0.0 0.6"/>
     <dynamics damping="8.0" friction="0.5"/>
-    <limit effort="4000.0" velocity="1.5"/>
+    <limit effort="4000.0" lower="-12.566370614359172" upper="12.566370614359172" velocity="1.5"/>
   </joint>
 
   <joint name="arm1_rotation" type="revolute">
@@ -192,8 +198,8 @@
     <axis xyz="0 1 0"/>
     <origin xyz="-1.362 0 -0.154"/>
     <dynamics damping="6.0" friction="0.8"/>
-    <!-- Lower bound slightly below nominal URDF so Gazebo start pose / solver drift stays inside MoveIt bounds -->
-    <limit effort="3000.0" lower="-2.60" upper="-0.357" velocity="1.2"/>
+    <!-- Upper relaxed toward 0: gz/joint_states often ~-0.01 rad; tight upper=-0.357 made CheckStartStateBounds fail. -->
+    <limit effort="3000.0" lower="-2.60" upper="0.35" velocity="1.2"/>
   </joint>
 
   <!-- Body -> sensor links (fixed, above cab) -->
@@ -208,44 +214,95 @@
     <origin xyz="0.35 0 0.4" rpy="0 0 0"/>
   </joint>
 
-  <!-- ros2_control interfaces -->
-  <ros2_control name="GazeboSimSystem" type="system">
-    <hardware>
-      <plugin>gz_ros2_control/GazeboSimSystem</plugin>
-    </hardware>
-
+  <!-- Mock hardware defaults all states to 0; arm joints must be negative per URDF limits. -->
+  <xacro:macro name="excavator_mock_ros2_control_joints">
     <joint name="body_rotation">
       <command_interface name="position"/>
-      <state_interface name="position"/>
+      <state_interface name="position">
+        <param name="initial_value">0.0</param>
+      </state_interface>
       <state_interface name="velocity"/>
     </joint>
-
     <joint name="arm1_rotation">
       <command_interface name="position"/>
-      <state_interface name="position"/>
+      <state_interface name="position">
+        <param name="initial_value">-0.70</param>
+      </state_interface>
       <state_interface name="velocity"/>
     </joint>
-
     <joint name="arm2_rotation">
       <command_interface name="position"/>
-      <state_interface name="position"/>
+      <state_interface name="position">
+        <param name="initial_value">-1.26</param>
+      </state_interface>
       <state_interface name="velocity"/>
     </joint>
-
     <joint name="shovel_rotation">
       <command_interface name="position"/>
-      <state_interface name="position"/>
+      <state_interface name="position">
+        <param name="initial_value">-1.12</param>
+      </state_interface>
       <state_interface name="velocity"/>
     </joint>
-  </ros2_control>
+  </xacro:macro>
 
-  <!-- Gazebo ros2_control plugin -->
-  <gazebo>
-    <plugin filename="libgz_ros2_control-system.so"
-            name="gz_ros2_control::GazeboSimROS2ControlPlugin">
-      <parameters>$(find excavator_description)/config/controllers.yaml</parameters>
-    </plugin>
-  </gazebo>
+  <xacro:macro name="excavator_ros2_control_joints">
+    <joint name="body_rotation">
+      <command_interface name="position"/>
+      <state_interface name="position">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="arm1_rotation">
+      <command_interface name="position"/>
+      <state_interface name="position">
+        <param name="initial_value">-0.70</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="arm2_rotation">
+      <command_interface name="position"/>
+      <state_interface name="position">
+        <param name="initial_value">-1.26</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="shovel_rotation">
+      <command_interface name="position"/>
+      <state_interface name="position">
+        <param name="initial_value">-1.12</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+  </xacro:macro>
+
+  <!-- ros2_control: Gazebo sim hardware (default) or mock hardware (RViz-only demo). -->
+  <xacro:unless value="$(arg use_mock_hardware)">
+    <ros2_control name="GazeboSimSystem" type="system">
+      <hardware>
+        <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+      </hardware>
+      <xacro:excavator_ros2_control_joints/>
+    </ros2_control>
+    <gazebo>
+      <plugin filename="libgz_ros2_control-system.so"
+              name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+        <parameters>$(find excavator_description)/config/controllers.yaml</parameters>
+      </plugin>
+    </gazebo>
+  </xacro:unless>
+
+  <xacro:if value="$(arg use_mock_hardware)">
+    <ros2_control name="MockHardwareSystem" type="system">
+      <hardware>
+        <plugin>mock_components/GenericSystem</plugin>
+        <param name="mock_sensor_commands">false</param>
+        <param name="position_state_following_offset">0.0</param>
+      </hardware>
+      <xacro:excavator_mock_ros2_control_joints/>
+    </ros2_control>
+  </xacro:if>
 
   <!-- IMU sensor (Gazebo Harmonic); orange so visible in sim -->
   <gazebo reference="sensor_imu_link">

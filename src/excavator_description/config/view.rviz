@@ -3,10 +3,7 @@ Panels:
     Help Height: 70
     Name: Displays
     Property Tree Widget:
-      Expanded:
-        - /Global Options1
-        - /Truck1
-        - /Truck1/Status1
+      Expanded: ~
       Splitter Ratio: 0.5
     Tree Height: 543
   - Class: excavator_interactive_rviz/PresetPosesPanel
@@ -125,6 +122,10 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: true
+        arm1:
+          Value: true
+        arm2:
+          Value: true
         base:
           Value: true
         base_link:
@@ -134,6 +135,8 @@ Visualization Manager:
         sensor_imu_link:
           Value: true
         sensor_lidar_link:
+          Value: true
+        shovel:
           Value: true
         truck/base_link:
           Value: true
@@ -152,7 +155,15 @@ Visualization Manager:
         world:
           base_link:
             base:
-              {}
+              body:
+                arm1:
+                  arm2:
+                    shovel:
+                      {}
+                sensor_imu_link:
+                  {}
+                sensor_lidar_link:
+                  {}
           truck/base_link:
             truck/dump_bed:
               truck/dump_target:
@@ -215,7 +226,7 @@ Visualization Manager:
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: base_link
+    Fixed Frame: world
     Frame Rate: 30
   Name: root
   Tools: ~
@@ -254,7 +265,7 @@ Window Geometry:
   Hide Right Dock: false
   PresetPosesPanel:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd00000001000000000000029200000395fc0200000002fb000000100044006900730070006c006100790073010000003f000002a5000000cc00fffffffb000000200050007200650073006500740050006f00730065007300500061006e0065006c01000002ea000000ea000000ea00ffffff000004a60000039500000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000001000000000000016400000395fc0200000002fb000000100044006900730070006c006100790073010000003f000002a5000000cc00fffffffb000000200050007200650073006500740050006f00730065007300500061006e0065006c01000002ea000000ea000000ea00ffffff000005d40000039500000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Width: 1854
   X: 66
   Y: 32

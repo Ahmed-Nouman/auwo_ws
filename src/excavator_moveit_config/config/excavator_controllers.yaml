@@ -3,8 +3,9 @@
 trajectory_execution:
   allowed_execution_duration_scaling: 2.0
   allowed_goal_duration_margin: 0.5
-  # Default was 0.01 rad — too tight vs Gazebo joint_state noise / continuous joints.
-  allowed_start_tolerance: 0.25
+  # Sim + TOTG + body slewing: logs showed shovel/arm2 mismatches; body_rotation can differ by >2.5 rad
+  # vs trajectory start when /joint_states and the plan use different 2π branches (revolute ±4π limits).
+  allowed_start_tolerance: 6.5
 
 moveit_controller_manager: moveit_simple_controller_manager/MoveItSimpleControllerManager
 
