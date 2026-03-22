@@ -58,6 +58,14 @@ ros2 launch excavator_moveit_config bucket_moveit.launch.py
 
 (Optional explicit flags: `include_gazebo:=true launch_rviz:=true` — same as defaults.)
 
+**RViz + MoveIt only (no Gazebo):** mock `ros2_control` hardware (`mock_components/GenericSystem`) runs `joint_state_broadcaster` and `arm_trajectory_controller` on the same machine so Plan and Execute use a consistent `/joint_states` and local `FollowJointTrajectory` server. Do not run this alongside another stack that already owns `/controller_manager` on the same `ROS_DOMAIN_ID`.
+
+```bash
+ros2 launch excavator_moveit_config demo_moveit_rviz.launch.py
+```
+
+Mock `ros2_control` sets **initial joint positions inside URDF limits** (arm joints are negative-only in this model). If you still see `CheckStartStateBounds` / “start state out of bounds”, the pose in RViz does not match `/joint_states`—use **Plan** from the current monitored state, or drag the interactive marker back into a valid configuration.
+
 **Twin in one terminal, MoveIt in another (no second Gazebo, no second RViz):**
 
 ```bash
@@ -144,6 +152,13 @@ The digital twin launch **`auwo_twin.launch.py`** stays on the classic stack (tw
 ## Daily / timeline log (Centria)
 
 *One block per calendar day, **reverse chronological order** (newest → oldest). Add a new `### YYYY-MM-DD` **immediately below this paragraph** when you log work.*
+
+### 2026-03-22 (auwo_twin launch run + shutdown findings)
+
+- **Digital twin startup verification**: `auwo_twin.launch.py` started excavator/truck publishers, Gazebo server+GUI, RViz, joint markers, twin router, trajectory adapter, and both bridges (`/clock`, `/imu`, `/points`).
+- **Spawn and bridge status**: Excavator and truck entities spawned successfully; `joint_state_broadcaster` was already active and skipped by `spawn_controller_safe.sh`; IMU and point cloud bridges reported successful GZ->ROS mappings.
+- **RViz/runtime observations**: RViz subscribed to point cloud stream (`/points_viz`) and loaded normally; plugin portability warning and duplicate rosout publisher warning were observed but did not block operation.
+- **Interrupt/shutdown behavior**: On Ctrl-C, most nodes exited cleanly; both `ros_gz_bridge` bridge nodes ended with exit code `-11` during teardown, and the delayed `arm_trajectory_controller` spawner exited with `-2` after interruption.
 
 ### 2026-03-20 (truck_description package, spawn reduction, RViz orientation)
 
