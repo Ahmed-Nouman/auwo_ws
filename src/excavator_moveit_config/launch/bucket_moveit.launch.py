@@ -1,16 +1,16 @@
 """
-MoveIt + RViz like demo_moveit_rviz, with an optional Gazebo simulation path.
+MoveIt + RViz like demo_moveit_rviz, with an optional Gazebo digital-twin path.
 
-  # Mock ros2_control (same idea as demo_moveit_rviz.launch.py)
+  # Mock ros2_control only (no Gazebo): local /controller_manager + mock hardware
   ros2 launch excavator_moveit_config bucket_moveit.launch.py
 
-  # Gazebo + Plan/Execute on the simulated arm (use_sim_time:=true)
-  ros2 launch excavator_moveit_config bucket_moveit.launch.py include_gazebo:=true use_sim_time:=true
-
-External Gazebo already running (e.g. auwo_twin):
-
+  # Gazebo Harmonic + excavator in sim + Plan/Execute on the simulated arm
   ros2 launch excavator_moveit_config bucket_moveit.launch.py \\
-    include_gazebo:=false use_sim_time:=true
+    include_gazebo:=true use_sim_time:=true
+
+  include_gazebo:=false starts the mock stack above; it does not attach to an
+  already-running Gazebo. For auwo_twin + MoveIt, use a separate launch or
+  domain that connects only to the existing sim (avoid two /controller_manager).
 
 Defaults to ROS_DOMAIN_ID=42 like the demo.
 """
@@ -343,16 +343,6 @@ def generate_launch_description():
             actions.append(moveit_rviz_sim_ld)
         return actions
 
-    def _start_gazebo_moveit_now(context):
-        actions = [move_group_sim_ld]
-        try:
-            rviz_on = context.perform_substitution(LaunchConfiguration("launch_rviz"))
-        except Exception:
-            rviz_on = "true"
-        if str(rviz_on).lower() in ("true", "1"):
-            actions.append(moveit_rviz_sim_ld)
-        return actions
-
     when_wait_mock_done = RegisterEventHandler(
         OnProcessExit(target_action=wait_mock, on_exit=_on_wait_mock_exit),
         condition=UnlessCondition(include_gz),
@@ -385,12 +375,6 @@ def generate_launch_description():
         condition=IfCondition(include_gz),
     )
 
-    start_moveit_gazebo_delayed = TimerAction(
-        period=LaunchConfiguration("gazebo_moveit_start_delay_sec"),
-        actions=_start_gazebo_moveit_now(None),
-        condition=IfCondition(include_gz),
-    )
-
     return LaunchDescription(
         [
             DeclareLaunchArgument(
@@ -402,7 +386,10 @@ def generate_launch_description():
             DeclareLaunchArgument(
                 "include_gazebo",
                 default_value="false",
-                description="If true, start excavator_gazebo instead of local ros2_control mock.",
+                description=(
+                    "If true: start excavator_gazebo (gz + controllers in sim). "
+                    "If false: local ros2_control mock only (not external Gazebo attach)."
+                ),
             ),
             DeclareLaunchArgument(
                 "use_sim_time",
@@ -439,13 +426,6 @@ def generate_launch_description():
                 default_value="35.0",
                 description=(
                     "include_gazebo: seconds before wait script runs (after gz spawn + spawners)."
-                ),
-            ),
-            DeclareLaunchArgument(
-                "gazebo_moveit_start_delay_sec",
-                default_value="22.0",
-                description=(
-                    "include_gazebo: start move_group/RViz after this delay even if wait is slow."
                 ),
             ),
             DeclareLaunchArgument(
@@ -490,11 +470,11 @@ def generate_launch_description():
             ros2_control_node,
             robot_state_publisher_mock,
             spawn_controllers_mock,
-            # Gazebo path
+            # Gazebo path (move_group + RViz only after wait_for_arm_trajectory_action succeeds)
+            when_wait_gazebo_done,
             gazebo_excavation,
             gazebo_default,
             delayed_wait_gazebo,
-            start_moveit_gazebo_delayed,
             truck_collision,
         ]
     )

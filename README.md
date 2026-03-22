@@ -49,14 +49,16 @@ Both displays are enabled by default. To add them manually: **Add** → **By dis
 
 ## MoveIt2 (interactive arm planning)
 
-**All-in-one:** Gazebo (**split** by default: `gz sim -s -r` server, then `gz sim -g` GUI after 3 s) + **event-driven** `move_group` (starts after `/arm_trajectory_controller/follow_joint_trajectory` exists) + MoveIt RViz (starts **after** `move_group` is launched so OMPL shows as loaded):
+**All-in-one (Gazebo + MoveIt):** pass **`include_gazebo:=true`** and **`use_sim_time:=true`** (defaults are mock-only). Gazebo (**split** by default: `gz sim -s -r` server, then `gz sim -g` GUI after 3 s) + **event-driven** `move_group` (starts after `/arm_trajectory_controller/follow_joint_trajectory` exists) + MoveIt RViz:
 
 ```bash
 source install/setup.bash
-ros2 launch excavator_moveit_config bucket_moveit.launch.py
+ros2 launch excavator_moveit_config bucket_moveit.launch.py include_gazebo:=true use_sim_time:=true
 ```
 
-(Optional explicit flags: `include_gazebo:=true launch_rviz:=true` — same as defaults.)
+**Mock only (no Gazebo window):** omit those flags (same as `include_gazebo:=false`).
+
+**If Gazebo opens but stays empty / terminal waits forever on controllers:** ensure **`GZ_PARTITION`** matches across processes (fixed in `excavator_gazebo` for `gz sim`, bridges, and `ros_gz_sim create`). Controllers are spawned **sequentially** (`joint_state_broadcaster` then `arm_trajectory_controller`) to avoid `controller_manager` races. For a lighter world while testing, use **`use_excavation_site:=false`** and optionally **`world:=$(ros2 pkg prefix excavator_description)/share/excavator_description/worlds/empty.sdf`**.
 
 **RViz + MoveIt only (no Gazebo):** mock `ros2_control` hardware (`mock_components/GenericSystem`) runs `joint_state_broadcaster` and `arm_trajectory_controller` on the same machine so Plan and Execute use a consistent `/joint_states` and local `FollowJointTrajectory` server. Do not run this alongside another stack that already owns `/controller_manager` on the same `ROS_DOMAIN_ID`.
 
@@ -80,11 +82,11 @@ ros2 launch excavator_moveit_config bucket_moveit.launch.py include_gazebo:=fals
 - **Trajectory path to Gazebo**: MoveIt sends `FollowJointTrajectory` goals to `/arm_trajectory_controller/follow_joint_trajectory`.
 - **Preset panel Simulation mode note**: this toggle affects the twin router (`/arm_position_controller/commands`) and is **independent** of MoveIt execution.
 - **`launch_rviz` default is `true`** for the all-in-one flow; use `launch_rviz:=false` with `auwo_twin` so only one RViz runs. With `include_gazebo:=false`, `move_group` starts immediately (no wait).
-- **Startup timing**: with `include_gazebo:=true`, `bucket_moveit.launch.py` runs `wait_for_arm_trajectory_action.py` until the `FollowJointTrajectory` action server is available, then starts `move_group` (no fixed delay). Tune **`wait_move_group_timeout_sec`** (default **180**) if spawn is very slow.
+- **Startup timing**: with `include_gazebo:=true`, `bucket_moveit.launch.py` waits **`gazebo_controller_ready_delay_sec`** (default **35**), then runs `wait_for_arm_trajectory_action.py` until controllers + the `FollowJointTrajectory` action server are ready, then starts `move_group`. Tune **`wait_move_group_timeout_sec`** (default **120**) if spawn is very slow.
 - **Gazebo GUI mode** (`excavator_gazebo`): `gazebo_unified_gui` defaults to **`false`** (split server + GUI). Set **`gazebo_unified_gui:=true`** for a **single** `gz sim` process (GUI+server); some machines get fewer “not responding” warnings that way. If spawn/controllers misbehave in unified mode, stay on split (default).
 - **No Gazebo window**: use **`headless:=true`** on `bucket_moveit.launch.py` (or `ros2 launch excavator_gazebo gazebo.launch.py headless:=true`) to run **server only** — physics, controllers, and MoveIt still work; use MoveIt RViz (or another client) to visualize. The delayed **`gz sim -g`** step is skipped entirely.
 - **Gazebo log verbosity**: `gazebo_verbose` defaults to **`1`** (`gz sim -v`; range 0–4). Use **`gazebo_verbose:=4`** for deep debug; lower values reduce console I/O during startup.
-- **`use_sim_time`**: default `true` with Gazebo.
+- **`use_sim_time`**: set **`use_sim_time:=true`** whenever **`include_gazebo:=true`** (required for `/clock` and MoveIt).
 - **Dump truck obstacle**: `publish_truck_obstacle` default `true` (coarse box on `/collision_object`). Tune `truck_box_*` or set `publish_truck_obstacle:=false`.
 - **OMPL / “no planning library” in RViz**: (1) Install and source the Debian plugin package: `sudo apt install ros-${ROS_DISTRO}-moveit-planners-ompl`, then `source /opt/ros/${ROS_DISTRO}/setup.bash && source install/setup.bash`. (2) **`/clock` must be publishing** if `use_sim_time` is true — without sim time, `move_group` and the MotionPlanning plugin often misbehave (planner dropdown stuck on **Unspecified**, execution fails). See **Sim clock / `/clock`** below. (3) Wait until **`move_group`** is running — with `include_gazebo:=true`, MoveIt RViz starts after the trajectory-action wait; look for **“You can start planning now!”** in the `move_group` log. (4) `ompl_planning.yaml` sets **`excavator_arm.default_planner_config: RRTConnect`** for the planning group.
 

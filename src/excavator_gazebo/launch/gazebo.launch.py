@@ -12,7 +12,9 @@ from launch.actions import (
     TimerAction,
     GroupAction,
     IncludeLaunchDescription,
+    RegisterEventHandler,
 )
+from launch.event_handlers import OnProcessExit
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.conditions import IfCondition, UnlessCondition
 from launch.substitutions import (
@@ -28,6 +30,9 @@ from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 from launch_ros.parameter_descriptions import ParameterValue
 from ament_index_python.packages import get_package_share_directory
+
+# Same transport partition for gz sim, bridges, and ros_gz_sim create (must match).
+_GZ_TRANSPORT_ENV = {'GZ_PARTITION': 'auwo_sim', 'IGN_PARTITION': 'auwo_sim'}
 
 MINIMAL_WORLD_SDF = """<?xml version="1.0" ?>
 <sdf version="1.9">
@@ -264,6 +269,9 @@ def generate_launch_description():
     dumper_y = LaunchConfiguration('dumper_y')
     dumper_z = LaunchConfiguration('dumper_z')
     dumper_yaw = LaunchConfiguration('dumper_yaw')
+    # Keep a safe fallback so this launch still works even if a parent launch
+    # forgets to declare/forward this argument.
+    controller_spawn_delay_sec = LaunchConfiguration('controller_spawn_delay_sec', default='12.0')
 
     world_arg = DeclareLaunchArgument(
         'world',
@@ -316,6 +324,15 @@ def generate_launch_description():
     dumper_y_arg = DeclareLaunchArgument('dumper_y', default_value='3.0')
     dumper_z_arg = DeclareLaunchArgument('dumper_z', default_value='0.5')
     dumper_yaw_arg = DeclareLaunchArgument('dumper_yaw', default_value='0.0')
+
+    controller_spawn_delay_sec_arg = DeclareLaunchArgument(
+        'controller_spawn_delay_sec',
+        default_value='12.0',
+        description=(
+            'Seconds after Gazebo starts before spawning joint_state_broadcaster and '
+            'arm_trajectory_controller (allow model + /clock bridge to be ready).'
+        ),
+    )
 
     # Same Gazebo Transport partition for gz sim + bridge so /excavator/imu and /excavator/points are visible to the bridge
     set_gz_partition = SetEnvironmentVariable(name='GZ_PARTITION', value='auwo_sim')
@@ -378,10 +395,12 @@ def generate_launch_description():
             '--physics-engine', physics_engine, world,
         ],
         output='screen',
+        additional_env=_GZ_TRANSPORT_ENV,
     )
     gz_gui = ExecuteProcess(
         cmd=['gz', 'sim', '-g'],
         output='screen',
+        additional_env=_GZ_TRANSPORT_ENV,
         condition=UnlessCondition(headless),
     )
     gz_gui_delayed = TimerAction(period=3.0, actions=[gz_gui])
@@ -391,6 +410,7 @@ def generate_launch_description():
             '--physics-engine', physics_engine, world,
         ],
         output='screen',
+        additional_env=_GZ_TRANSPORT_ENV,
     )
 
     use_unified_gui = PythonExpression(
@@ -436,6 +456,7 @@ def generate_launch_description():
                 '-x', spawn_x, '-y', spawn_y, '-z', spawn_z,
                 '-R', spawn_R, '-P', spawn_P, '-Y', spawn_Y,
             ],
+            additional_env=_GZ_TRANSPORT_ENV,
         )
     else:
         spawner = Node(
@@ -451,6 +472,7 @@ def generate_launch_description():
                 '-x', spawn_x, '-y', spawn_y, '-z', spawn_z,
                 '-R', spawn_R, '-P', spawn_P, '-Y', spawn_Y,
             ],
+            additional_env=_GZ_TRANSPORT_ENV,
         )
 
     # Bridge nodes must use use_sim_time:=false so they do not block waiting for /clock while publishing it.
@@ -463,7 +485,7 @@ def generate_launch_description():
         parameters=[
             {'use_sim_time': False, 'config_file': clock_bridge_config},
         ],
-        additional_env={'GZ_PARTITION': 'auwo_sim', 'IGN_PARTITION': 'auwo_sim'},
+        additional_env=_GZ_TRANSPORT_ENV,
         arguments=['--ros-args', '--log-level', 'info'],
     )
     sensors_bridge_config = os.path.join(pkg_gazebo_share, 'config', 'sensors_bridge.yaml')
@@ -475,7 +497,7 @@ def generate_launch_description():
         parameters=[
             {'use_sim_time': False, 'config_file': sensors_bridge_config},
         ],
-        additional_env={'GZ_PARTITION': 'auwo_sim', 'IGN_PARTITION': 'auwo_sim'},
+        additional_env=_GZ_TRANSPORT_ENV,
         arguments=['--ros-args', '--log-level', 'info'],
     )
 
@@ -516,8 +538,16 @@ def generate_launch_description():
         output='screen'
     )
 
+    # Chain spawners: two parallel spawners often race controller_manager and never reach ACTIVE.
+    after_jsb_spawn_arm = RegisterEventHandler(
+        OnProcessExit(target_action=spawner_jsb, on_exit=[spawner_arm]),
+    )
+
     # Controllers after model is in world and /clock bridge is up.
-    spawn_after_gz = TimerAction(period=12.0, actions=[spawner_jsb, spawner_arm])
+    spawn_after_gz = TimerAction(
+        period=controller_spawn_delay_sec,
+        actions=[spawner_jsb, after_jsb_spawn_arm],
+    )
 
     # ---- Dump truck (when spawn_dumper is true and truck URDF was generated) ----
     truck_group_actions = []
@@ -535,6 +565,7 @@ def generate_launch_description():
                 '-x', dumper_x, '-y', dumper_y, '-z', dumper_z,
                 '-R', '0', '-P', '0', '-Y', dumper_yaw,
             ],
+            additional_env=_GZ_TRANSPORT_ENV,
             condition=IfCondition(spawn_dumper),
         )
 
@@ -601,6 +632,7 @@ def generate_launch_description():
         physics_engine_arg,
         spawn_x_arg, spawn_y_arg, spawn_z_arg, spawn_R_arg, spawn_P_arg, spawn_Y_arg,
         spawn_dumper_arg, dumper_x_arg, dumper_y_arg, dumper_z_arg, dumper_yaw_arg,
+        controller_spawn_delay_sec_arg,
         set_gz_partition,
         set_gz_resource_path,
         rsp,
