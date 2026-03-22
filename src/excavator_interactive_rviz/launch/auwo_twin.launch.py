@@ -1,6 +1,11 @@
 import os
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, TimerAction
+from launch.actions import (
+    DeclareLaunchArgument,
+    ExecuteProcess,
+    IncludeLaunchDescription,
+    TimerAction,
+)
 from launch.conditions import IfCondition, UnlessCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
@@ -58,6 +63,27 @@ def generate_launch_description():
         output="screen",
     )
     rviz_delayed = TimerAction(period=4.0, actions=[rviz])
+
+    # Force Gazebo to paused state shortly after startup.
+    # This keeps auwo_twin behavior deterministic even if gz sim starts running.
+    pause_gazebo = ExecuteProcess(
+        cmd=[
+            "gz",
+            "service",
+            "-s",
+            "/world/default/control",
+            "--reqtype",
+            "gz.msgs.WorldControl",
+            "--reptype",
+            "gz.msgs.Boolean",
+            "--timeout",
+            "5000",
+            "--req",
+            "pause: true",
+        ],
+        output="screen",
+    )
+    pause_gazebo_delayed = TimerAction(period=5.0, actions=[pause_gazebo])
 
     # --- Interactive markers ---
     joint_imarkers = Node(
@@ -136,6 +162,7 @@ def generate_launch_description():
             ),
             gazebo_excavation,
             gazebo_default,
+            pause_gazebo_delayed,
             rviz_delayed,
             joint_imarkers,
             twin_router_node,
