@@ -110,7 +110,7 @@ public:
     setLayout(main_layout);
 
     // --- Preset definitions -----------------------------------------------
-    // joint order: [body_rotation, arm1_rotation, arm2_rotation, shovel_rotation]
+    // joint order: [body_rotation, boom_rotation, stick_rotation, bucket_rotation]
     presets_.push_back({"Idle",      {0.0,  -1.0,  -1.5,  -1.0}});
     presets_.push_back({"Dig",       {0.0,  -0.8,  -2.0,  -2.2}});
     presets_.push_back({"Dump",      {1.2,  -1.2,  -0.4,  -0.6}});
@@ -269,9 +269,9 @@ private:
     // Extract in the order we care about
     const char * names[4] = {
       "body_rotation",
-      "arm1_rotation",
-      "arm2_rotation",
-      "shovel_rotation"
+      "boom_rotation",
+      "stick_rotation",
+      "bucket_rotation"
     };
 
     for (size_t i = 0; i < 4; ++i) {
@@ -357,7 +357,7 @@ private:
     }
 
     // Format joints
-    QString joints_str = QString("Joints [body, arm1, arm2, shovel]: "
+    QString joints_str = QString("Joints [body, boom, stick, bucket]: "
                                  "%1, %2, %3, %4")
       .arg(current_joints_[0], 0, 'f', 3)
       .arg(current_joints_[1], 0, 'f', 3)

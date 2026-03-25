@@ -1,16 +1,17 @@
 """
-MoveIt + RViz like demo_moveit_rviz, with an optional Gazebo digital-twin path.
+MoveIt + RViz with Gazebo Harmonic by default (excavator in sim + Plan/Execute).
 
-  # Mock ros2_control only (no Gazebo): local /controller_manager + mock hardware
+  # Default: Gazebo + use_sim_time (excavation site world unless overridden).
+  # Gazebo starts paused; press Play in the sim GUI to run physics.
   ros2 launch excavator_moveit_config bucket_moveit.launch.py
 
-  # Gazebo Harmonic + excavator in sim + Plan/Execute on the simulated arm
+  # Mock ros2_control only (no Gazebo): local /controller_manager + mock hardware
   ros2 launch excavator_moveit_config bucket_moveit.launch.py \\
-    include_gazebo:=true use_sim_time:=true
+    include_gazebo:=false use_sim_time:=false
 
-  include_gazebo:=false starts the mock stack above; it does not attach to an
-  already-running Gazebo. For auwo_twin + MoveIt, use a separate launch or
-  domain that connects only to the existing sim (avoid two /controller_manager).
+  include_gazebo:=false does not attach to an already-running Gazebo. For
+  auwo_twin + MoveIt, use a separate launch or domain that connects only to the
+  existing sim (avoid two /controller_manager).
 
 Defaults to ROS_DOMAIN_ID=42 like the demo.
 """
@@ -76,6 +77,34 @@ def generate_launch_description():
             robot_desc_mock,
             {"use_sim_time": ParameterValue(use_sim, value_type=bool)},
         ],
+        condition=UnlessCondition(include_gz),
+    )
+
+    # Same SRDF virtual_joint (world -> base_link) as demo_moveit_rviz; mock stack had no Gazebo excavator_world_tf.
+    world_tf_mock = Node(
+        package="tf2_ros",
+        executable="static_transform_publisher",
+        arguments=[
+            "--frame-id",
+            "world",
+            "--child-frame-id",
+            "base_link",
+            "--x",
+            "0",
+            "--y",
+            "0",
+            "--z",
+            "0",
+            "--qx",
+            "0",
+            "--qy",
+            "0",
+            "--qz",
+            "0",
+            "--qw",
+            "1",
+        ],
+        parameters=[{"use_sim_time": ParameterValue(use_sim, value_type=bool)}],
         condition=UnlessCondition(include_gz),
     )
 
@@ -385,7 +414,7 @@ def generate_launch_description():
             SetEnvironmentVariable("ROS_DOMAIN_ID", LaunchConfiguration("ros_domain_id")),
             DeclareLaunchArgument(
                 "include_gazebo",
-                default_value="false",
+                default_value="true",
                 description=(
                     "If true: start excavator_gazebo (gz + controllers in sim). "
                     "If false: local ros2_control mock only (not external Gazebo attach)."
@@ -393,8 +422,8 @@ def generate_launch_description():
             ),
             DeclareLaunchArgument(
                 "use_sim_time",
-                default_value="false",
-                description="Set true when using Gazebo /clock (include_gazebo:=true).",
+                default_value="true",
+                description="Use Gazebo /clock when include_gazebo is true; set false for mock-only.",
             ),
             DeclareLaunchArgument(
                 "launch_rviz",
@@ -469,6 +498,7 @@ def generate_launch_description():
             when_wait_mock_done,
             ros2_control_node,
             robot_state_publisher_mock,
+            world_tf_mock,
             spawn_controllers_mock,
             # Gazebo path (move_group + RViz only after wait_for_arm_trajectory_action succeeds)
             when_wait_gazebo_done,

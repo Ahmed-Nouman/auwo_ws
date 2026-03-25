@@ -66,6 +66,34 @@ def generate_launch_description():
         ],
     )
 
+    # SRDF virtual_joint uses parent_frame "world" -> base_link. Without this, "world" is missing
+    # from /tf and the MoveIt RViz planning scene often stays frozen while Plan/Execute still work.
+    world_tf = Node(
+        package="tf2_ros",
+        executable="static_transform_publisher",
+        arguments=[
+            "--frame-id",
+            "world",
+            "--child-frame-id",
+            "base_link",
+            "--x",
+            "0",
+            "--y",
+            "0",
+            "--z",
+            "0",
+            "--qx",
+            "0",
+            "--qy",
+            "0",
+            "--qz",
+            "0",
+            "--qw",
+            "1",
+        ],
+        parameters=[{"use_sim_time": ParameterValue(use_sim, value_type=bool)}],
+    )
+
     spawner_jsb = Node(
         package="controller_manager",
         executable="spawner",
@@ -202,6 +230,7 @@ def generate_launch_description():
             when_wait_done,
             ros2_control_node,
             robot_state_publisher,
+            world_tf,
             spawn_controllers,
         ]
     )

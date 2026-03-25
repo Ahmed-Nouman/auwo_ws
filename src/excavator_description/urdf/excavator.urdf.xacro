@@ -50,7 +50,7 @@
   </link>
 
   <!-- ARM1 (boom) -->
-  <link name="arm1">
+  <link name="boom">
     <inertial>
       <mass value="120.0"/>
       <origin xyz="0 0 0"/>
@@ -58,19 +58,19 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="package://excavator_description/meshes/arm1.dae"/>
+        <mesh filename="package://excavator_description/meshes/boom.dae"/>
       </geometry>
       <origin xyz="0 0 0"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://excavator_description/meshes/arm1.dae"/>
+        <mesh filename="package://excavator_description/meshes/boom.dae"/>
       </geometry>
     </collision>
   </link>
 
   <!-- ARM2 (stick) -->
-  <link name="arm2">
+  <link name="stick">
     <inertial>
       <mass value="80.0"/>
       <origin xyz="0 0 0"/>
@@ -78,19 +78,19 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="package://excavator_description/meshes/arm2.dae"/>
+        <mesh filename="package://excavator_description/meshes/stick.dae"/>
       </geometry>
       <origin xyz="0 0 0"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://excavator_description/meshes/arm2.dae"/>
+        <mesh filename="package://excavator_description/meshes/stick.dae"/>
       </geometry>
     </collision>
   </link>
 
   <!-- SHOVEL (bucket) -->
-  <link name="shovel">
+  <link name="bucket">
     <inertial>
       <mass value="60.0"/>
       <origin xyz="0 0 0"/>
@@ -98,13 +98,13 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="package://excavator_description/meshes/shovel.dae"/>
+        <mesh filename="package://excavator_description/meshes/bucket.dae"/>
       </geometry>
       <origin xyz="0 0 0"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://excavator_description/meshes/shovel.dae"/>
+        <mesh filename="package://excavator_description/meshes/bucket.dae"/>
       </geometry>
     </collision>
   </link>
@@ -174,27 +174,27 @@
     <limit effort="4000.0" lower="-12.566370614359172" upper="12.566370614359172" velocity="1.5"/>
   </joint>
 
-  <joint name="arm1_rotation" type="revolute">
+  <joint name="boom_rotation" type="revolute">
     <parent link="body"/>
-    <child link="arm1"/>
+    <child link="boom"/>
     <axis xyz="0 1 0"/>
     <origin xyz="0.933 -0.134 0.302"/>
     <dynamics damping="10.0" friction="1.5"/>
     <limit effort="4000.0" lower="-1.308" upper="-0.087" velocity="1.0"/>
   </joint>
 
-  <joint name="arm2_rotation" type="revolute">
-    <parent link="arm1"/>
-    <child link="arm2"/>
+  <joint name="stick_rotation" type="revolute">
+    <parent link="boom"/>
+    <child link="stick"/>
     <axis xyz="0 1 0"/>
     <origin xyz="2.586 0 -0.625"/>
     <dynamics damping="8.0" friction="1.2"/>
     <limit effort="3500.0" lower="-2.428" upper="-0.085" velocity="1.0"/>
   </joint>
 
-  <joint name="shovel_rotation" type="revolute">
-    <parent link="arm2"/>
-    <child link="shovel"/>
+  <joint name="bucket_rotation" type="revolute">
+    <parent link="stick"/>
+    <child link="bucket"/>
     <axis xyz="0 1 0"/>
     <origin xyz="-1.362 0 -0.154"/>
     <dynamics damping="6.0" friction="0.8"/>
@@ -223,21 +223,21 @@
       </state_interface>
       <state_interface name="velocity"/>
     </joint>
-    <joint name="arm1_rotation">
+    <joint name="boom_rotation">
       <command_interface name="position"/>
       <state_interface name="position">
         <param name="initial_value">-0.70</param>
       </state_interface>
       <state_interface name="velocity"/>
     </joint>
-    <joint name="arm2_rotation">
+    <joint name="stick_rotation">
       <command_interface name="position"/>
       <state_interface name="position">
         <param name="initial_value">-1.26</param>
       </state_interface>
       <state_interface name="velocity"/>
     </joint>
-    <joint name="shovel_rotation">
+    <joint name="bucket_rotation">
       <command_interface name="position"/>
       <state_interface name="position">
         <param name="initial_value">-1.12</param>
@@ -254,21 +254,21 @@
       </state_interface>
       <state_interface name="velocity"/>
     </joint>
-    <joint name="arm1_rotation">
+    <joint name="boom_rotation">
       <command_interface name="position"/>
       <state_interface name="position">
         <param name="initial_value">-0.70</param>
       </state_interface>
       <state_interface name="velocity"/>
     </joint>
-    <joint name="arm2_rotation">
+    <joint name="stick_rotation">
       <command_interface name="position"/>
       <state_interface name="position">
         <param name="initial_value">-1.26</param>
       </state_interface>
       <state_interface name="velocity"/>
     </joint>
-    <joint name="shovel_rotation">
+    <joint name="bucket_rotation">
       <command_interface name="position"/>
       <state_interface name="position">
         <param name="initial_value">-1.12</param>

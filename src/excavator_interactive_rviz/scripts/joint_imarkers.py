@@ -18,9 +18,9 @@ class ExcavatorJointInteractive(Node):
     Interactive markers to control ALL excavator joints with linear sliders:
 
       body_rotation   (slider mapped to [-pi, pi])
-      arm1_rotation   (slider, URDF limits)
-      arm2_rotation   (slider, URDF limits)
-      shovel_rotation (slider, URDF limits)
+      boom_rotation   (slider, URDF limits)
+      stick_rotation  (slider, URDF limits)
+      bucket_rotation (slider, URDF limits)
 
     Flow:
       RViz interactive markers --> this node --> /arm_position_controller/commands
@@ -33,9 +33,9 @@ class ExcavatorJointInteractive(Node):
         # Joint order must match controllers.yaml
         self.joint_order = [
             "body_rotation",
-            "arm1_rotation",
-            "arm2_rotation",
-            "shovel_rotation",
+            "boom_rotation",
+            "stick_rotation",
+            "bucket_rotation",
         ]
 
         # Current joint positions (updated from /joint_states)
@@ -54,28 +54,28 @@ class ExcavatorJointInteractive(Node):
                 "marker_min":  -0.7,
                 "marker_max":   0.7,
             },
-            "arm1_rotation": {
-                "frame_id": "arm1",
-                "marker_name": "arm1_control",
-                "description": "Arm1 rotation",
+            "boom_rotation": {
+                "frame_id": "boom",
+                "marker_name": "boom_control",
+                "description": "Boom rotation",
                 "joint_lower": -1.308,
                 "joint_upper": -0.087,
                 "marker_min":  -0.5,
                 "marker_max":   0.5,
             },
-            "arm2_rotation": {
-                "frame_id": "arm2",
-                "marker_name": "arm2_control",
-                "description": "Arm2 rotation",
+            "stick_rotation": {
+                "frame_id": "stick",
+                "marker_name": "stick_control",
+                "description": "Stick rotation",
                 "joint_lower": -2.428,
                 "joint_upper": -0.085,
                 "marker_min":  -0.5,
                 "marker_max":   0.5,
             },
-            "shovel_rotation": {
-                "frame_id": "shovel",
+            "bucket_rotation": {
+                "frame_id": "bucket",
                 "marker_name": "bucket_control",
-                "description": "Bucket (shovel_rotation)",
+                "description": "Bucket rotation",
                 "joint_lower": -2.395,
                 "joint_upper": -0.357,
                 "marker_min":  -0.5,

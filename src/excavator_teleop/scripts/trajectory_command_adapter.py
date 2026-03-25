@@ -6,7 +6,7 @@ used by the excavation cycle and RViz (arm_position_controller/commands), builds
 a short trajectory from current state to target, and publishes to
 arm_trajectory_controller/joint_trajectory.
 
-Joint order: body_rotation, arm1_rotation, arm2_rotation, shovel_rotation.
+Joint order: body_rotation, boom_rotation, stick_rotation, bucket_rotation.
 """
 import rclpy
 from rclpy.node import Node
@@ -15,7 +15,7 @@ from sensor_msgs.msg import JointState
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from builtin_interfaces.msg import Duration
 
-JOINT_ORDER = ["body_rotation", "arm1_rotation", "arm2_rotation", "shovel_rotation"]
+JOINT_ORDER = ["body_rotation", "boom_rotation", "stick_rotation", "bucket_rotation"]
 TRAJ_DURATION_S = 0.6  # time from current to target
 NUM_POINTS = 15       # waypoints for smooth interpolation
 

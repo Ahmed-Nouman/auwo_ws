@@ -49,16 +49,16 @@ Both displays are enabled by default. To add them manually: **Add** → **By dis
 
 ## MoveIt2 (interactive arm planning)
 
-**All-in-one (Gazebo + MoveIt):** pass **`include_gazebo:=true`** and **`use_sim_time:=true`** (defaults are mock-only). Gazebo (**split** by default: `gz sim -s -r` server, then `gz sim -g` GUI after 3 s) + **event-driven** `move_group` (starts after `/arm_trajectory_controller/follow_joint_trajectory` exists) + MoveIt RViz:
+**All-in-one (Gazebo + MoveIt):** default launch starts Gazebo with **`use_sim_time:=true`**. Gazebo (**split** by default: `gz sim -s -r` server, then `gz sim -g` GUI after 3 s) + **event-driven** `move_group` (starts after `/arm_trajectory_controller/follow_joint_trajectory` exists) + MoveIt RViz:
 
 ```bash
 source /opt/ros/${ROS_DISTRO}/setup.bash
 colcon build --packages-select excavator_gazebo excavator_moveit_config --symlink-install
 source install/setup.bash
-ros2 launch excavator_moveit_config bucket_moveit.launch.py include_gazebo:=true use_sim_time:=true
+ros2 launch excavator_moveit_config bucket_moveit.launch.py
 ```
 
-**Mock only (no Gazebo window):** omit those flags (same as `include_gazebo:=false`).
+**Mock only (no Gazebo window):** **`include_gazebo:=false use_sim_time:=false`** (local mock `ros2_control`, no sim clock).
 
 If Gazebo starts but `move_group` / RViz never launches, first rebuild + re-source as above so installed launch files are in sync with source changes.
 
@@ -82,7 +82,7 @@ ros2 launch excavator_interactive_rviz auwo_twin.launch.py
 ros2 launch excavator_moveit_config bucket_moveit.launch.py include_gazebo:=false launch_rviz:=false
 ```
 
-- **Planning group**: `excavator_arm` (chain to `shovel`). In **MotionPlanning**, **Plan** then **Execute**.
+- **Planning group**: `excavator_arm` (chain to `bucket` link). In **MotionPlanning**, **Plan** then **Execute**.
 - **Trajectory path to Gazebo**: MoveIt sends `FollowJointTrajectory` goals to `/arm_trajectory_controller/follow_joint_trajectory`.
 - **Preset panel Simulation mode note**: this toggle affects the twin router (`/arm_position_controller/commands`) and is **independent** of MoveIt execution.
 - **`launch_rviz` default is `true`** for the all-in-one flow; use `launch_rviz:=false` with `auwo_twin` so only one RViz runs. With `include_gazebo:=false`, `move_group` starts immediately (no wait).
@@ -90,7 +90,7 @@ ros2 launch excavator_moveit_config bucket_moveit.launch.py include_gazebo:=fals
 - **Gazebo GUI mode** (`excavator_gazebo`): `gazebo_unified_gui` defaults to **`false`** (split server + GUI). Set **`gazebo_unified_gui:=true`** for a **single** `gz sim` process (GUI+server); some machines get fewer “not responding” warnings that way. If spawn/controllers misbehave in unified mode, stay on split (default).
 - **No Gazebo window**: use **`headless:=true`** on `bucket_moveit.launch.py` (or `ros2 launch excavator_gazebo gazebo.launch.py headless:=true`) to run **server only** — physics, controllers, and MoveIt still work; use MoveIt RViz (or another client) to visualize. The delayed **`gz sim -g`** step is skipped entirely.
 - **Gazebo log verbosity**: `gazebo_verbose` defaults to **`1`** (`gz sim -v`; range 0–4). Use **`gazebo_verbose:=4`** for deep debug; lower values reduce console I/O during startup.
-- **`use_sim_time`**: set **`use_sim_time:=true`** whenever **`include_gazebo:=true`** (required for `/clock` and MoveIt).
+- **`use_sim_time`**: defaults **`true`** with Gazebo (required for `/clock` and MoveIt); set **`false`** when **`include_gazebo:=false`** (mock-only).
 - **Dump truck obstacle**: `publish_truck_obstacle` default `true` (coarse box on `/collision_object`). Tune `truck_box_*` or set `publish_truck_obstacle:=false`.
 - **OMPL / “no planning library” in RViz**: (1) Install and source the Debian plugin package: `sudo apt install ros-${ROS_DISTRO}-moveit-planners-ompl`, then `source /opt/ros/${ROS_DISTRO}/setup.bash && source install/setup.bash`. (2) **`/clock` must be publishing** if `use_sim_time` is true — without sim time, `move_group` and the MotionPlanning plugin often misbehave (planner dropdown stuck on **Unspecified**, execution fails). See **Sim clock / `/clock`** below. (3) Wait until **`move_group`** is running — with `include_gazebo:=true`, MoveIt RViz starts after the trajectory-action wait; look for **“You can start planning now!”** in the `move_group` log. (4) `ompl_planning.yaml` sets **`excavator_arm.default_planner_config: RRTConnect`** for the planning group.
 
@@ -135,7 +135,7 @@ ros2 action list | grep /arm_trajectory_controller/follow_joint_trajectory
 This is often **not a crash**. GNOME/KDE mark the window unresponsive when the **Qt main thread** is busy loading **Ogre2**, scene sync from the server, and GUI plugins—especially right after `gz sim -g` attaches. **MoveIt RViz** also uses OpenGL, so **two heavy GL apps** can extend that pause on integrated GPUs.
 
 - **Wait 30–60 s** on first open; if the window recovers, it was startup blocking.
-- Click the Gazebo window and press **Play** if sensors or sim time need it (server is started with **`-r`** so it is usually already running).
+- Click the Gazebo window and press **Play** to run physics and advance sim time (server starts **paused** by default).
 - **Try unified GUI**: `ros2 launch excavator_moveit_config bucket_moveit.launch.py gazebo_unified_gui:=true` (one `gz sim` process; sometimes smoother than split `-s`/`-g`).
 - **GPU / driver**: `LIBGL_ALWAYS_SOFTWARE=1 ros2 launch excavator_moveit_config bucket_moveit.launch.py` (slow but stable) to test driver-related freezes.
 - **Session**: compare **Xorg** vs **Wayland** if your desktop allows; Gazebo may force **xcb** under Wayland.
@@ -158,6 +158,13 @@ The digital twin launch **`auwo_twin.launch.py`** stays on the classic stack (tw
 ## Daily / timeline log (Centria)
 
 *One block per calendar day, **reverse chronological order** (newest → oldest). Add a new `### YYYY-MM-DD` **immediately below this paragraph** when you log work.*
+
+### 2026-03-25 (MoveIt RViz execution, Gazebo pause, naming, environment mesh)
+
+- **MoveIt + RViz scene robot**: Added static **`world` → `base_link`** TF for SRDF virtual joint (`demo_moveit_rviz`, mock **`bucket_moveit`** path). **`excavator_gazebo`**: always publish **`excavator_world_tf`** at excavator spawn (not only `spawn_dumper`) so **`world`** exists without the dump-truck group. **`moveit.rviz`**: absolute **`/monitored_planning_scene`** and **`/display_planned_path`**.
+- **Gazebo**: Removed **`-r`** from **`gz sim`** so the sim starts **paused**; press **Play** to run physics and advance **`/clock`**.
+- **Excavator naming**: Mesh files **`arm1` / `arm2` / `shovel`** → **`boom` / `stick` / `bucket`** (`.dae`); URDF links and joints → **`boom`**, **`stick`**, **`bucket`**, **`boom_rotation`**, **`stick_rotation`**, **`bucket_rotation`**; SRDF, controllers, MoveIt YAML, teleop, cycle, interactive RViz, and **`view.rviz`** updated accordingly.
+- **Pete environment**: Renamed **`untitled.stl`** → **`environment.stl`**; **`model.sdf`** URI and docs/comments updated.
 
 ### 2026-03-22 (auwo_twin launch run + shutdown findings)
 
@@ -185,7 +192,7 @@ The digital twin launch **`auwo_twin.launch.py`** stays on the classic stack (tw
 - **`gazebo.launch.py`**: **`gazebo_unified_gui`** (default **`false`**) — set **`true`** for single-process **`gz sim`** if split GUI triggers OS “not responding”. **`gazebo_verbose`** (default **`1`**) for **`gz sim -v`** (0–4; previously hard-coded **`4`**).
 - **MoveIt execute**: **`arm_trajectory_controller`** — **`allow_nonzero_velocity_at_trajectory_end: true`** and **`constraints.goal_time`** in **`excavator_description/config/controllers.yaml`** so MoveIt trajectories are not rejected for non-zero end velocity; **`allowed_start_tolerance`** nudged in **`excavator_controllers.yaml`**.
 - **Gazebo ↔ ROS bridge**: **`clock_bridge.yaml`** only **`/clock`**; **`sensors_bridge.yaml`** for IMU/LiDAR; bridge nodes run with **`use_sim_time:=false`** so **`/clock`** is published without a deadlock. Timers: clock ~**1.5 s**, sensors ~**5 s**. **`moveit_rviz.launch.py`** prepends **`moveit_planners_ompl`** on **`AMENT_PREFIX_PATH`** like **`move_group`**.
-- **MoveIt controllers YAML**: **`trajectory_execution.allowed_start_tolerance`** (nested under **`trajectory_execution:`**, not a flat key). **`excavator.srdf`**: **`parent_group`** on end-effector **`bucket`**. **`shovel_rotation`** URDF lower limit relaxed slightly for Gazebo/MoveIt bounds alignment.
+- **MoveIt controllers YAML**: **`trajectory_execution.allowed_start_tolerance`** (nested under **`trajectory_execution:`**, not a flat key). **`excavator.srdf`**: end-effector **`bucket`** on link **`bucket`**. **`bucket_rotation`** URDF lower limit relaxed slightly for Gazebo/MoveIt bounds alignment.
 - **README**: “Not responding” GUI notes; **`headless:=true`**; **Plan OK / Execute fails** troubleshooting (logs, clock, tolerances).
 
 ### 2026-03-11
@@ -194,7 +201,7 @@ The digital twin launch **`auwo_twin.launch.py`** stays on the classic stack (tw
 - **`bucket_moveit.launch.py`**: **Gazebo** when **`include_gazebo:=true`**; **`move_group`** only after **`wait_for_arm_trajectory_action.py`** sees **`/arm_trajectory_controller/follow_joint_trajectory`** (event-driven; **`wait_move_group_timeout_sec`** default 180 s). **MoveIt RViz** starts with **`move_group`** so MotionPlanning loads OMPL. Default **`launch_rviz:=true`**. With **`auwo_twin`** already running: **`include_gazebo:=false launch_rviz:=false`**.
 - **Trajectory**: **`move_group`** remaps to **`/arm_trajectory_controller/follow_joint_trajectory`**.
 - **OMPL**: **`moveit_planners_ompl`** in **`package.xml`**; **`ompl_planning.yaml`** → **`excavator_arm.default_planner_config: RRTConnect`**; **`move_group.launch.py`** prepends **`moveit_planners_ompl`** to **`AMENT_PREFIX_PATH`** when present.
-- **Gazebo (MoveIt flow)**: Default **split** **`gz sim -s -r`** + delayed **`gz sim -g`**; excavator spawn **`-world default`**, **`ros_gz_sim create`** from resolved URDF **`-file`** for reliable gz transport discovery with immediate spawn. **`headless:=true`** = server only.
+- **Gazebo (MoveIt flow)**: Default **split** **`gz sim -s`** (paused until Play) + delayed **`gz sim -g`**; excavator spawn **`-world default`**, **`ros_gz_sim create`** from resolved URDF **`-file`** for reliable gz transport discovery with immediate spawn. **`headless:=true`** = server only.
 - **`auwo_twin.launch.py`**: Classic twin only (no MoveIt on RViz). **`view.rviz`**: no embedded MotionPlanning.
 - **Workflow**: **`bucket_moveit`** for dig/dump poses → joint targets into **`auwo_twin`** run-cycle presets.
 
@@ -211,7 +218,7 @@ The digital twin launch **`auwo_twin.launch.py`** stays on the classic stack (tw
 - Digital twin launch: Gazebo (excavation_site world) + RViz + dump truck; excavator and truck spawn; robot descriptions published to dedicated topics for RViz.
 - Dump truck: Pete-style GLB mesh, scaling/orientation adjusted; truck at (4, 3) to avoid overlap with excavator.
 - Excavation cycle: Wall-time state machine (PREPARE_DIG → SCOOP_AND_SLEW → LIFT_AND_ALIGN_DUMP → DUMP → RETURN_HOME); warmup 15 s; publishes target positions at 10 Hz.
-- Environment: Pete environment mesh (untitled.stl) in world; previous pit model removed.
+- Environment: Pete environment mesh (environment.stl) in world; previous pit model removed.
 - Controllers: joint_state_broadcaster + arm_trajectory_controller; clock bridged for sim time; publish_robot_descriptions ensures `/robot_description` is excavator (for gz_ros_control) and RViz topics are fed.
 
 ---

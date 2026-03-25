@@ -12,9 +12,9 @@ arm_position_controller:
   ros__parameters:
     joints:
       - body_rotation
-      - arm1_rotation
-      - arm2_rotation
-      - shovel_rotation
+      - boom_rotation
+      - stick_rotation
+      - bucket_rotation
     command_interfaces:
       - position
     state_interfaces:
@@ -25,9 +25,9 @@ arm_trajectory_controller:
   ros__parameters:
     joints:
       - body_rotation
-      - arm1_rotation
-      - arm2_rotation
-      - shovel_rotation
+      - boom_rotation
+      - stick_rotation
+      - bucket_rotation
     command_interfaces:
       - position
     state_interfaces:

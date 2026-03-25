@@ -4,27 +4,27 @@
   <virtual_joint name="virtual_joint" type="fixed" parent_frame="world" child_link="base_link"/>
 
   <group name="excavator_arm">
-    <chain base_link="base_link" tip_link="shovel"/>
+    <chain base_link="base_link" tip_link="bucket"/>
   </group>
 
   <group_state name="home" group="excavator_arm">
     <joint name="body_rotation" value="0"/>
-    <joint name="arm1_rotation" value="-1.0"/>
-    <joint name="arm2_rotation" value="-1.5"/>
-    <joint name="shovel_rotation" value="-1.0"/>
+    <joint name="boom_rotation" value="-1.0"/>
+    <joint name="stick_rotation" value="-1.5"/>
+    <joint name="bucket_rotation" value="-1.0"/>
   </group_state>
 
-  <end_effector name="bucket" parent_link="shovel" group="excavator_arm"/>
+  <end_effector name="bucket" parent_link="bucket" group="excavator_arm"/>
 
   <!-- Adjacent / fixed-attached links: disable to reduce false self-collisions from mesh coarseness -->
   <disable_collisions link1="base_link" link2="base" reason="Adjacent"/>
   <disable_collisions link1="base" link2="body" reason="Adjacent"/>
-  <disable_collisions link1="body" link2="arm1" reason="Adjacent"/>
-  <disable_collisions link1="arm1" link2="arm2" reason="Adjacent"/>
-  <disable_collisions link1="arm2" link2="shovel" reason="Adjacent"/>
+  <disable_collisions link1="body" link2="boom" reason="Adjacent"/>
+  <disable_collisions link1="boom" link2="stick" reason="Adjacent"/>
+  <disable_collisions link1="stick" link2="bucket" reason="Adjacent"/>
   <disable_collisions link1="body" link2="sensor_imu_link" reason="Adjacent"/>
   <disable_collisions link1="body" link2="sensor_lidar_link" reason="Adjacent"/>
   <disable_collisions link1="sensor_imu_link" link2="sensor_lidar_link" reason="Never"/>
-  <disable_collisions link1="arm1" link2="sensor_lidar_link" reason="Never"/>
-  <disable_collisions link1="arm1" link2="sensor_imu_link" reason="Never"/>
+  <disable_collisions link1="boom" link2="sensor_lidar_link" reason="Never"/>
+  <disable_collisions link1="boom" link2="sensor_imu_link" reason="Never"/>
 </robot>

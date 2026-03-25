@@ -5,7 +5,7 @@ from rclpy.node import Node
 from rclpy.executors import SingleThreadedExecutor
 from std_msgs.msg import Float64MultiArray
 
-HELP = "Keys: a/d body, w/s arm1, i/k arm2, j/l shovel, SPACE safe pose, q quit"
+HELP = "Keys: a/d body, w/s boom, i/k stick, j/l bucket, SPACE safe pose, q quit"
 
 # --- Joint limits from your URDF ---
 LIMS_MIN = [float('-inf'), -1.308, -2.428, -2.395]  # body is continuous

@@ -8,18 +8,18 @@ from std_msgs.msg import Float64MultiArray
 from enum import Enum, auto
 
 # URDF joint ranges for clamping (body is continuous so we won't clamp it)
-ARM1_MIN, ARM1_MAX = -1.308, -0.087     # boom
-ARM2_MIN, ARM2_MAX = -2.428, -0.085     # stick
-SHOVEL_MIN, SHOVEL_MAX = -2.395, -0.357 # bucket
+BOOM_MIN, BOOM_MAX = -1.308, -0.087     # boom
+STICK_MIN, STICK_MAX = -2.428, -0.085   # stick
+BUCKET_MIN, BUCKET_MAX = -2.395, -0.357 # bucket
 
 
 def clamp_arm_joints(q):
-    # q = [body, arm1, arm2, shovel]
-    body, a1, a2, sh = q
-    a1 = max(ARM1_MIN, min(ARM1_MAX, a1))
-    a2 = max(ARM2_MIN, min(ARM2_MAX, a2))
-    sh = max(SHOVEL_MIN, min(SHOVEL_MAX, sh))
-    return [body, a1, a2, sh]
+    # q = [body, boom, stick, bucket]
+    body, boom, stick, bucket = q
+    boom = max(BOOM_MIN, min(BOOM_MAX, boom))
+    stick = max(STICK_MIN, min(STICK_MAX, stick))
+    bucket = max(BUCKET_MIN, min(BUCKET_MAX, bucket))
+    return [body, boom, stick, bucket]
 
 
 class CycleState(Enum):
@@ -90,7 +90,7 @@ class ExcavationCycleNode(Node):
             self.get_logger().info(f"➡ state: {self.sequence[self.state_index].name}")
 
     def _desired_pose_for_state(self, state: CycleState):
-        """Return the target joint pose [body, arm1, arm2, shovel] for the given state."""
+        """Return the target joint pose [body, boom, stick, bucket] for the given state."""
 
         if state == CycleState.PREPARE_DIG:
             # boom & stick down/out, bucket open, body facing pile

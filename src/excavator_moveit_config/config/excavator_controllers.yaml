@@ -3,7 +3,7 @@
 trajectory_execution:
   allowed_execution_duration_scaling: 2.0
   allowed_goal_duration_margin: 0.5
-  # Sim + TOTG + body slewing: logs showed shovel/arm2 mismatches; body_rotation can differ by >2.5 rad
+  # Sim + TOTG + body slewing: logs showed bucket/stick mismatches; body_rotation can differ by >2.5 rad
   # vs trajectory start when /joint_states and the plan use different 2π branches (revolute ±4π limits).
   allowed_start_tolerance: 6.5
 
@@ -19,6 +19,6 @@ moveit_simple_controller_manager:
     default: true
     joints:
       - body_rotation
-      - arm1_rotation
-      - arm2_rotation
-      - shovel_rotation
+      - boom_rotation
+      - stick_rotation
+      - bucket_rotation

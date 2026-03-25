@@ -376,6 +376,20 @@ def generate_launch_description():
         }]
     )
 
+    # world -> base_link at excavator spawn: MoveIt SRDF virtual_joint + RViz planning scene need "world" in TF.
+    # Published for every sim run (not only spawn_dumper) so bucket_moveit / RViz work without the dump truck.
+    excavator_world_tf = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='excavator_world_tf',
+        arguments=[
+            '--x', spawn_x, '--y', spawn_y, '--z', spawn_z,
+            '--roll', spawn_R, '--pitch', spawn_P, '--yaw', spawn_Y,
+            '--frame-id', 'world', '--child-frame-id', 'base_link',
+        ],
+        parameters=[{'use_sim_time': use_sim_time}],
+    )
+
     # Publish excavator and truck URDF to separate topics for RViz (paths as plain strings so they resolve reliably)
     desc_publisher = Node(
         package='excavator_gazebo',
@@ -389,9 +403,10 @@ def generate_launch_description():
     )
 
     # Split: server (-s) + delayed GUI (-g). Unified: single process (some GPUs/desktops are smoother).
+    # No -r: start paused (use Play in the Gazebo GUI to run); -r would auto-run on start.
     gz_server = ExecuteProcess(
         cmd=[
-            'gz', 'sim', '-s', '-r', '-v', gazebo_verbose,
+            'gz', 'sim', '-s', '-v', gazebo_verbose,
             '--physics-engine', physics_engine, world,
         ],
         output='screen',
@@ -406,7 +421,7 @@ def generate_launch_description():
     gz_gui_delayed = TimerAction(period=3.0, actions=[gz_gui])
     gz_unified = ExecuteProcess(
         cmd=[
-            'gz', 'sim', '-r', '-v', gazebo_verbose,
+            'gz', 'sim', '-v', gazebo_verbose,
             '--physics-engine', physics_engine, world,
         ],
         output='screen',
@@ -601,21 +616,7 @@ def generate_launch_description():
             condition=IfCondition(spawn_dumper),
         )
 
-        # World -> excavator base_link at spawn pose so both excavator and truck are under world
-        excavator_world_tf = Node(
-            package='tf2_ros',
-            executable='static_transform_publisher',
-            name='excavator_world_tf',
-            arguments=[
-                '--x', spawn_x, '--y', spawn_y, '--z', spawn_z,
-                '--roll', spawn_R, '--pitch', spawn_P, '--yaw', spawn_Y,
-                '--frame-id', 'world', '--child-frame-id', 'base_link',
-            ],
-            parameters=[{'use_sim_time': use_sim_time}],
-            condition=IfCondition(spawn_dumper),
-        )
-
-        truck_group_actions = [truck_spawn, truck_rsp, truck_static_tf, excavator_world_tf]
+        truck_group_actions = [truck_spawn, truck_rsp, truck_static_tf]
 
     truck_group = GroupAction(
         condition=IfCondition(spawn_dumper),
@@ -636,6 +637,7 @@ def generate_launch_description():
         set_gz_partition,
         set_gz_resource_path,
         rsp,
+        excavator_world_tf,
         desc_publisher,
         gz_unified_group,
         gz_split_group,

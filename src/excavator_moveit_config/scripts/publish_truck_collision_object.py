@@ -17,7 +17,7 @@ class TruckCollisionPublisher(Node):
         self.declare_parameter("frame_id", "world")
         self.declare_parameter("object_id", "dump_truck_box")
         # Box center + full lengths (SolidPrimitive.BOX). Defaults avoid engulfing the excavator at the origin:
-        # old lx=7 at px=4 spanned x in [0.5,7.5] and made dump_truck_box collide with shovel in home reach.
+        # old lx=7 at px=4 spanned x in [0.5,7.5] and made dump_truck_box collide with bucket in home reach.
         self.declare_parameter("position_x", 6.25)
         self.declare_parameter("position_y", 3.0)
         self.declare_parameter("position_z", 0.95)

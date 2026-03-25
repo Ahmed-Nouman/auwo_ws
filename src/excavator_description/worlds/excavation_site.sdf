@@ -27,7 +27,7 @@
       <uri>https://fuel.gazebosim.org/1.0/openrobotics/models/Sun</uri>
     </include>
 
-    <!-- Pete environment (from Downloads/pete-driving-articulated-dump-truck, untitled.stl) -->
+    <!-- Pete environment (from Downloads/pete-driving-articulated-dump-truck, environment.stl) -->
     <include>
       <uri>model://pete_environment</uri>
       <pose>0 0 0 0 0 0</pose>

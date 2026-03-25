@@ -29,12 +29,12 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        arm1:
+        boom:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        arm2:
+        stick:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -63,7 +63,7 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        shovel:
+        bucket:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -122,9 +122,9 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: true
-        arm1:
+        boom:
           Value: true
-        arm2:
+        stick:
           Value: true
         base:
           Value: true
@@ -136,7 +136,7 @@ Visualization Manager:
           Value: true
         sensor_lidar_link:
           Value: true
-        shovel:
+        bucket:
           Value: true
         truck/base_link:
           Value: true
@@ -156,9 +156,9 @@ Visualization Manager:
           base_link:
             base:
               body:
-                arm1:
-                  arm2:
-                    shovel:
+                boom:
+                  stick:
+                    bucket:
                       {}
                 sensor_imu_link:
                   {}
