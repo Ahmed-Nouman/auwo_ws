@@ -1,0 +1,25 @@
+physical_tf_follower_node:
+  ros__parameters:
+    world_frame: world_offset
+    base_frame: kinematic_1005
+    boom_joint_frame: kinematic_1003
+    stick_joint_frame: kinematic_1002
+    bucket_joint_frame: kinematic_1001
+
+    publish_topic: /physical_twin/state
+    mirror_to_joint_states: true
+    joint_states_topic: /joint_states
+    publish_world_to_base_tf: true
+    base_link_frame: base_link
+    publish_rate_hz: 30.0
+
+    # Tune these per machine mounting/calibration if needed.
+    body_sign: 1.0
+    boom_sign: -1.0
+    stick_sign: -1.0
+    bucket_sign: -1.0
+
+    body_offset: 0.0
+    boom_offset: -0.70
+    stick_offset: -1.26
+    bucket_offset: -1.12

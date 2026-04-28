@@ -6,8 +6,7 @@ and consistent /joint_states.
 
   ros2 launch excavator_moveit_config demo_moveit_rviz.launch.py
 
-This launch defaults to an isolated ROS_DOMAIN_ID to avoid cross-talk with
-other running stacks.
+This launch defaults to ROS_DOMAIN_ID=0 (standard/default domain).
 """
 import os
 
@@ -208,8 +207,8 @@ def generate_launch_description():
         [
             DeclareLaunchArgument(
                 "ros_domain_id",
-                default_value="42",
-                description="Isolated ROS domain for mock MoveIt demo.",
+                default_value="0",
+                description="ROS domain for mock MoveIt demo.",
             ),
             SetEnvironmentVariable("ROS_DOMAIN_ID", LaunchConfiguration("ros_domain_id")),
             DeclareLaunchArgument(

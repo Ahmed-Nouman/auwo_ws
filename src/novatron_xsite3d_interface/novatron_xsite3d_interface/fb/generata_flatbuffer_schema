@@ -1,0 +1,1 @@
+flatc --python KinematicResults.fbs TypeDefs.fbs

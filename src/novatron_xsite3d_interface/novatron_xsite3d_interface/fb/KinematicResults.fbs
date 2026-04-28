@@ -1,0 +1,29 @@
+include "TypeDefs.fbs";
+
+namespace xcrtipcmsg.fb;
+
+enum KinematicQualityValue:uint {
+    kinematic_quality_value_none = 0,
+    kinematic_quality_value_bad = 1,
+    kinematic_quality_value_medium = 2,
+    kinematic_quality_value_good = 3,
+}
+
+table KinematicDataResult {
+    id:short;
+    origin:Vector3;
+    end:Vector3;               // member named 'end' causes conflicts
+    orientation:Quat;
+    quality:KinematicQualityValue;
+}
+
+table KinematicData {
+    results:[KinematicDataResult];
+    quality_kinematics:KinematicQualityValue;
+    machine_config_checksum:ulong;
+    rtk_config_checksum:ulong;
+    world_offset:Vector3d;
+    timestamp_us: ulong;
+}
+
+root_type KinematicData;

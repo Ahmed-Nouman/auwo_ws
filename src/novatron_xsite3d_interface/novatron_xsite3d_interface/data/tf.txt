@@ -1,0 +1,1387 @@
+ra2@cena-Latitude-7280:~/Devel/auwo_ws$ ros2 topic echo /tf
+transforms:
+- header:
+    stamp:
+      sec: 1776943518
+      nanosec: 956919204
+    frame_id: world_offset
+  child_frame_id: kinematic_1001
+  transform:
+    translation:
+      x: -7.2834601402282715
+      y: 0.18672534823417664
+      z: -1.3402491807937622
+    rotation:
+      x: -0.3748374879360199
+      y: 0.3873768448829651
+      z: -0.6053380966186523
+      w: 0.5856638550758362
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943518
+      nanosec: 964079914
+    frame_id: world_offset
+  child_frame_id: kinematic_1003
+  transform:
+    translation:
+      x: 0.06199806183576584
+      y: -0.1379985362291336
+      z: 0.0008004743722267449
+    rotation:
+      x: 0.5510321259498596
+      y: -0.4453534483909607
+      z: 0.4547272324562073
+      w: 0.5396731495857239
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943518
+      nanosec: 964079914
+    frame_id: world_offset
+  child_frame_id: kinematic_2511
+  transform:
+    translation:
+      x: 0.8971099257469177
+      y: -2.2441067695617676
+      z: 1.0737329721450806
+    rotation:
+      x: -0.0022949788253754377
+      y: -0.0013472848804667592
+      z: -3.0920011795387836e-06
+      w: 0.9999964833259583
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943518
+      nanosec: 974942447
+    frame_id: world_offset
+  child_frame_id: kinematic_2001
+  transform:
+    translation:
+      x: -7.295951843261719
+      y: -0.28306883573532104
+      z: -1.3463718891143799
+    rotation:
+      x: 0.01260426640510559
+      y: 0.5290294885635376
+      z: -0.007858872413635254
+      w: 0.8484735488891602
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943518
+      nanosec: 974942447
+    frame_id: world_offset
+  child_frame_id: kinematic_3003
+  transform:
+    translation:
+      x: -6.627534866333008
+      y: -0.43542176485061646
+      z: -2.8058576583862305
+    rotation:
+      x: 0.15697842836380005
+      y: -0.1623075306415558
+      z: -0.7001498937606812
+      w: 0.6773511171340942
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943518
+      nanosec: 988759920
+    frame_id: world_offset
+  child_frame_id: kinematic_1099
+  transform:
+    translation:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+    rotation:
+      x: -0.0022949788253754377
+      y: -0.0013472848804667592
+      z: -3.0920011795387836e-06
+      w: 0.9999964833259583
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943518
+      nanosec: 988759920
+    frame_id: world_offset
+  child_frame_id: kinematic_3001
+  transform:
+    translation:
+      x: -6.5877766609191895
+      y: 0.7639796137809753
+      z: -2.8058934211730957
+    rotation:
+      x: 0.15701237320899963
+      y: -0.16232821345329285
+      z: -0.7001135349273682
+      w: 0.6773757934570312
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 3175580
+    frame_id: world_offset
+  child_frame_id: kinematic_1000
+  transform:
+    translation:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+    rotation:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+      w: 1.0
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 3175580
+    frame_id: world_offset
+  child_frame_id: kinematic_3003
+  transform:
+    translation:
+      x: -6.62747049331665
+      y: -0.4325755536556244
+      z: -2.8059656620025635
+    rotation:
+      x: 0.15701711177825928
+      y: -0.16230109333992004
+      z: -0.7000492811203003
+      w: 0.6774476170539856
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 15241028
+    frame_id: world_offset
+  child_frame_id: kinematic_2001
+  transform:
+    translation:
+      x: -7.295951843261719
+      y: -0.28306883573532104
+      z: -1.3463718891143799
+    rotation:
+      x: 0.012528866529464722
+      y: 0.5290452241897583
+      z: -0.007812172174453735
+      w: 0.8484653234481812
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 22846845
+    frame_id: world_offset
+  child_frame_id: kinematic_3105
+  transform:
+    translation:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+    rotation:
+      x: -0.0022950454149395227
+      y: -0.0013471366837620735
+      z: -3.091750613748445e-06
+      w: 0.9999964833259583
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 22846845
+    frame_id: world_offset
+  child_frame_id: kinematic_3001
+  transform:
+    translation:
+      x: -6.588115692138672
+      y: 0.766720175743103
+      z: -2.806077480316162
+    rotation:
+      x: 0.1569833755493164
+      y: -0.16228044033050537
+      z: -0.7000855207443237
+      w: 0.6774230599403381
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 32203185
+    frame_id: world_offset
+  child_frame_id: kinematic_1099
+  transform:
+    translation:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+    rotation:
+      x: -0.0022949788253754377
+      y: -0.0013472848804667592
+      z: -3.0920011795387836e-06
+      w: 0.9999964833259583
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 32203185
+    frame_id: world_offset
+  child_frame_id: kinematic_3004
+  transform:
+    translation:
+      x: -6.225833892822266
+      y: 0.1544775515794754
+      z: -2.618802547454834
+    rotation:
+      x: 0.1569833755493164
+      y: -0.16228044033050537
+      z: -0.7000855207443237
+      w: 0.6774230599403381
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 47518125
+    frame_id: world_offset
+  child_frame_id: kinematic_1011
+  transform:
+    translation:
+      x: -7.296191692352295
+      y: -0.280589759349823
+      z: -1.3463610410690308
+    rotation:
+      x: 0.6088147759437561
+      y: 0.3685673773288727
+      z: -0.37961545586586
+      w: 0.5910962820053101
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 47518125
+    frame_id: world_offset
+  child_frame_id: kinematic_2511
+  transform:
+    translation:
+      x: 0.8972406387329102
+      y: -2.2441203594207764
+      z: 1.073594331741333
+    rotation:
+      x: -0.002288457937538624
+      y: -0.0012864572927355766
+      z: -2.944013431260828e-06
+      w: 0.999996542930603
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 56219853
+    frame_id: world_offset
+  child_frame_id: kinematic_3004
+  transform:
+    translation:
+      x: -6.225833892822266
+      y: 0.1544775515794754
+      z: -2.618812084197998
+    rotation:
+      x: 0.1569833755493164
+      y: -0.16228044033050537
+      z: -0.7000855207443237
+      w: 0.6774230599403381
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 64660602
+    frame_id: world_offset
+  child_frame_id: kinematic_1002
+  transform:
+    translation:
+      x: -5.764875888824463
+      y: -0.26162421703338623
+      z: 1.1270195245742798
+    rotation:
+      x: -0.682626485824585
+      y: 0.19275681674480438
+      z: 0.19418305158615112
+      w: 0.6776127219200134
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 76656723
+    frame_id: world
+  child_frame_id: world_offset
+  transform:
+    translation:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+    rotation:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+      w: 1.0
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 76656723
+    frame_id: world_offset
+  child_frame_id: kinematic_2001
+  transform:
+    translation:
+      x: -7.296374320983887
+      y: -0.2811366617679596
+      z: -1.3473368883132935
+    rotation:
+      x: 0.012528866529464722
+      y: 0.5290452241897583
+      z: -0.007812172174453735
+      w: 0.8484653234481812
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 76656723
+    frame_id: world_offset
+  child_frame_id: kinematic_3101
+  transform:
+    translation:
+      x: -7.296374320983887
+      y: -0.2811366617679596
+      z: -1.3473368883132935
+    rotation:
+      x: 0.00486796023324132
+      y: 0.5290941596031189
+      z: -0.003035352099686861
+      w: 0.8485438823699951
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 87566612
+    frame_id: world_offset
+  child_frame_id: kinematic_2004
+  transform:
+    translation:
+      x: -6.935490608215332
+      y: 0.17456701397895813
+      z: -1.1699614524841309
+    rotation:
+      x: -0.3680064082145691
+      y: 0.3802855908870697
+      z: -0.6097847819328308
+      w: 0.5900143980979919
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 95974205
+    frame_id: world_offset
+  child_frame_id: kinematic_1000
+  transform:
+    translation:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+    rotation:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+      w: 1.0
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 95974205
+    frame_id: world_offset
+  child_frame_id: kinematic_2004
+  transform:
+    translation:
+      x: -6.935537338256836
+      y: 0.17459917068481445
+      z: -1.1699496507644653
+    rotation:
+      x: -0.3679999113082886
+      y: 0.3802453279495239
+      z: -0.6097737550735474
+      w: 0.5900556445121765
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 95974205
+    frame_id: world_offset
+  child_frame_id: kinematic_2511
+  transform:
+    translation:
+      x: 0.8972538709640503
+      y: -2.243990182876587
+      z: 1.0738550424575806
+    rotation:
+      x: -0.0023490763269364834
+      y: -0.0012800215044990182
+      z: -3.00687884191575e-06
+      w: 0.9999964237213135
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 110879790
+    frame_id: world_offset
+  child_frame_id: kinematic_3004
+  transform:
+    translation:
+      x: -6.226018905639648
+      y: 0.15386240184307098
+      z: -2.6191060543060303
+    rotation:
+      x: 0.15701711177825928
+      y: -0.16230109333992004
+      z: -0.7000492811203003
+      w: 0.6774476170539856
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 123127763
+    frame_id: world_offset
+  child_frame_id: kinematic_1005
+  transform:
+    translation:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+    rotation:
+      x: -0.002349137794226408
+      y: -0.0012798701645806432
+      z: -3.00660190077906e-06
+      w: 0.9999964237213135
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 123127763
+    frame_id: world_offset
+  child_frame_id: kinematic_3005
+  transform:
+    translation:
+      x: -6.005281448364258
+      y: 0.1440345048904419
+      z: -2.008528232574463
+    rotation:
+      x: 0.30988985300064087
+      y: -0.32027289271354675
+      z: -0.6433008313179016
+      w: 0.6225414872169495
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 132295878
+    frame_id: world_offset
+  child_frame_id: kinematic_1002
+  transform:
+    translation:
+      x: -5.7650322914123535
+      y: -0.2594945430755615
+      z: 1.1264393329620361
+    rotation:
+      x: -0.682640552520752
+      y: 0.19277408719062805
+      z: 0.19421236217021942
+      w: 0.6775851845741272
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 132295878
+    frame_id: world_offset
+  child_frame_id: kinematic_3005
+  transform:
+    translation:
+      x: -6.0055670738220215
+      y: 0.14666056632995605
+      z: -2.008481025695801
+    rotation:
+      x: 0.30988985300064087
+      y: -0.32027289271354675
+      z: -0.6433008313179016
+      w: 0.6225414872169495
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 147830335
+    frame_id: world_offset
+  child_frame_id: kinematic_1002
+  transform:
+    translation:
+      x: -5.7650322914123535
+      y: -0.2594945430755615
+      z: 1.1264393329620361
+    rotation:
+      x: -0.682640552520752
+      y: 0.19277408719062805
+      z: 0.19421236217021942
+      w: 0.6775851845741272
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 147830335
+    frame_id: world_offset
+  child_frame_id: kinematic_3006
+  transform:
+    translation:
+      x: -6.608031272888184
+      y: 0.1663956344127655
+      z: -2.8063833713531494
+    rotation:
+      x: 0.30988985300064087
+      y: -0.32027289271354675
+      z: -0.6433008313179016
+      w: 0.6225414872169495
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 158849254
+    frame_id: world_offset
+  child_frame_id: kinematic_2003
+  transform:
+    translation:
+      x: -6.935609817504883
+      y: 0.17725372314453125
+      z: -1.1700351238250732
+    rotation:
+      x: -0.3679999113082886
+      y: 0.3802453279495239
+      z: -0.6097737550735474
+      w: 0.5900556445121765
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 158849254
+    frame_id: world_offset
+  child_frame_id: kinematic_3006
+  transform:
+    translation:
+      x: -6.608031272888184
+      y: 0.1663956344127655
+      z: -2.8063833713531494
+    rotation:
+      x: 0.30988985300064087
+      y: -0.32027289271354675
+      z: -0.6433008313179016
+      w: 0.6225414872169495
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 171776192
+    frame_id: world_offset
+  child_frame_id: kinematic_1011
+  transform:
+    translation:
+      x: -7.296277046203613
+      y: -0.28111734986305237
+      z: -1.3468295335769653
+    rotation:
+      x: 0.608805775642395
+      y: 0.36855965852737427
+      z: -0.37957698106765747
+      w: 0.5911350250244141
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 184771780
+    frame_id: world_offset
+  child_frame_id: kinematic_1005
+  transform:
+    translation:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+    rotation:
+      x: -0.002355725271627307
+      y: -0.0013405499048531055
+      z: -3.157978653689497e-06
+      w: 0.9999964237213135
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 184771780
+    frame_id: world_offset
+  child_frame_id: kinematic_2106
+  transform:
+    translation:
+      x: -6.608031749725342
+      y: 0.16639560461044312
+      z: -2.8063740730285645
+    rotation:
+      x: 0.30988985300064087
+      y: -0.32027289271354675
+      z: -0.6433008313179016
+      w: 0.6225414872169495
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 193433171
+    frame_id: world_offset
+  child_frame_id: kinematic_1001
+  transform:
+    translation:
+      x: -7.283850193023682
+      y: 0.18867889046669006
+      z: -1.3407377004623413
+    rotation:
+      x: -0.37485334277153015
+      y: 0.38732779026031494
+      z: -0.605299711227417
+      w: 0.5857256650924683
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 193433171
+    frame_id: world_offset
+  child_frame_id: kinematic_3101
+  transform:
+    translation:
+      x: -7.296277046203613
+      y: -0.28111734986305237
+      z: -1.3468295335769653
+    rotation:
+      x: 0.004834035411477089
+      y: 0.5290613174438477
+      z: -0.003013892099261284
+      w: 0.8485645651817322
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 205977525
+    frame_id: world_offset
+  child_frame_id: kinematic_2003
+  transform:
+    translation:
+      x: -6.935537815093994
+      y: 0.17459914088249207
+      z: -1.1699402332305908
+    rotation:
+      x: -0.3679999113082886
+      y: 0.3802453279495239
+      z: -0.6097737550735474
+      w: 0.5900556445121765
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 218495825
+    frame_id: world_offset
+  child_frame_id: kinematic_1002
+  transform:
+    translation:
+      x: -5.765000820159912
+      y: -0.2648630738258362
+      z: 1.1260371208190918
+    rotation:
+      x: -0.6826315522193909
+      y: 0.19272853434085846
+      z: 0.19415271282196045
+      w: 0.6776242256164551
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 218495825
+    frame_id: world_offset
+  child_frame_id: kinematic_2511
+  transform:
+    translation:
+      x: 0.8971371054649353
+      y: -2.2438461780548096
+      z: 1.0742539167404175
+    rotation:
+      x: -0.002416403964161873
+      y: -0.0013339624274522066
+      z: -3.2234040645562345e-06
+      w: 0.9999961853027344
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 227080599
+    frame_id: world_offset
+  child_frame_id: kinematic_3001
+  transform:
+    translation:
+      x: -6.5880937576293945
+      y: 0.7607325315475464
+      z: -2.8069801330566406
+    rotation:
+      x: 0.15701711177825928
+      y: -0.16230109333992004
+      z: -0.7000492811203003
+      w: 0.6774476170539856
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 239781987
+    frame_id: world_offset
+  child_frame_id: kinematic_2001
+  transform:
+    translation:
+      x: -7.296245098114014
+      y: -0.2864859402179718
+      z: -1.3472570180892944
+    rotation:
+      x: 0.01249513030052185
+      y: 0.5290125608444214
+      z: -0.007790416479110718
+      w: 0.8484863042831421
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 239781987
+    frame_id: world_offset
+  child_frame_id: kinematic_3005
+  transform:
+    translation:
+      x: -6.00553560256958
+      y: 0.14129194617271423
+      z: -2.008899211883545
+    rotation:
+      x: 0.30988985300064087
+      y: -0.32027289271354675
+      z: -0.6433008313179016
+      w: 0.6225414872169495
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 252020508
+    frame_id: world_offset
+  child_frame_id: kinematic_2004
+  transform:
+    translation:
+      x: -6.935420989990234
+      y: 0.17461347579956055
+      z: -1.1705819368362427
+    rotation:
+      x: -0.3679999113082886
+      y: 0.3802453279495239
+      z: -0.6097737550735474
+      w: 0.5900556445121765
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 261025237
+    frame_id: world
+  child_frame_id: world_offset
+  transform:
+    translation:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+    rotation:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+      w: 1.0
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 261025237
+    frame_id: world_offset
+  child_frame_id: kinematic_2004
+  transform:
+    translation:
+      x: -6.935267925262451
+      y: 0.1719329059123993
+      z: -1.1700762510299683
+    rotation:
+      x: -0.3679999113082886
+      y: 0.3802453279495239
+      z: -0.6097737550735474
+      w: 0.5900556445121765
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 261025237
+    frame_id: world_offset
+  child_frame_id: kinematic_2511
+  transform:
+    translation:
+      x: 0.8971235752105713
+      y: -2.2439768314361572
+      z: 1.0739935636520386
+    rotation:
+      x: -0.0023556596133857965
+      y: -0.0013407017104327679
+      z: -3.158248318868573e-06
+      w: 0.9999964237213135
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 276290607
+    frame_id: world_offset
+  child_frame_id: kinematic_3001
+  transform:
+    translation:
+      x: -6.58797550201416
+      y: 0.7604567408561707
+      z: -2.806471586227417
+    rotation:
+      x: 0.15701711177825928
+      y: -0.16230109333992004
+      z: -0.7000492811203003
+      w: 0.6774476170539856
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 287656393
+    frame_id: world_offset
+  child_frame_id: kinematic_2002
+  transform:
+    translation:
+      x: -6.947673320770264
+      y: -0.2981583774089813
+      z: -1.1761783361434937
+    rotation:
+      x: 0.01249513030052185
+      y: 0.5290125608444214
+      z: -0.007790416479110718
+      w: 0.8484863042831421
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 296113894
+    frame_id: world_offset
+  child_frame_id: kinematic_1000
+  transform:
+    translation:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+    rotation:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+      w: 1.0
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 296113894
+    frame_id: world_offset
+  child_frame_id: kinematic_2004
+  transform:
+    translation:
+      x: -6.935077667236328
+      y: 0.17181560397148132
+      z: -1.1701925992965698
+    rotation:
+      x: -0.3679999113082886
+      y: 0.3802453279495239
+      z: -0.6097737550735474
+      w: 0.5900556445121765
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 296113894
+    frame_id: world_offset
+  child_frame_id: kinematic_2511
+  transform:
+    translation:
+      x: 0.8971235752105713
+      y: -2.2439768314361572
+      z: 1.0739935636520386
+    rotation:
+      x: -0.0023556596133857965
+      y: -0.0013407017104327679
+      z: -3.158248318868573e-06
+      w: 0.9999964237213135
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 310839543
+    frame_id: world_offset
+  child_frame_id: kinematic_3001
+  transform:
+    translation:
+      x: -6.587774276733398
+      y: 0.7603799700737
+      z: -2.8071653842926025
+    rotation:
+      x: 0.15701711177825928
+      y: -0.16230109333992004
+      z: -0.7000492811203003
+      w: 0.6774476170539856
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 321703521
+    frame_id: world_offset
+  child_frame_id: kinematic_1002
+  transform:
+    translation:
+      x: -5.76505708694458
+      y: -0.26216331124305725
+      z: 1.1260342597961426
+    rotation:
+      x: -0.6826991438865662
+      y: 0.19269044697284698
+      z: 0.19414971768856049
+      w: 0.6775678396224976
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 329927682
+    frame_id: world
+  child_frame_id: world_offset
+  transform:
+    translation:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+    rotation:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+      w: 1.0
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 329927682
+    frame_id: world_offset
+  child_frame_id: kinematic_2003
+  transform:
+    translation:
+      x: -6.935004711151123
+      y: 0.17427513003349304
+      z: -1.170267105102539
+    rotation:
+      x: -0.3679999113082886
+      y: 0.3802453279495239
+      z: -0.6097737550735474
+      w: 0.5900556445121765
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 329927682
+    frame_id: world_offset
+  child_frame_id: kinematic_3101
+  transform:
+    translation:
+      x: -7.295671463012695
+      y: -0.2840959131717682
+      z: -1.3470709323883057
+    rotation:
+      x: 0.004834035411477089
+      y: 0.5290613174438477
+      z: -0.003013892099261284
+      w: 0.8485645651817322
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 344661078
+    frame_id: world_offset
+  child_frame_id: kinematic_3001
+  transform:
+    translation:
+      x: -6.587733745574951
+      y: 0.7630940675735474
+      z: -2.8066365718841553
+    rotation:
+      x: 0.15701711177825928
+      y: -0.16230109333992004
+      z: -0.7000492811203003
+      w: 0.6774476170539856
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 355331309
+    frame_id: world_offset
+  child_frame_id: kinematic_1002
+  transform:
+    translation:
+      x: -5.764960289001465
+      y: -0.2621491253376007
+      z: 1.1265342235565186
+    rotation:
+      x: -0.682626485824585
+      y: 0.19275681674480438
+      z: 0.19418305158615112
+      w: 0.6776127219200134
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 355331309
+    frame_id: world_offset
+  child_frame_id: kinematic_3101
+  transform:
+    translation:
+      x: -7.2960357666015625
+      y: -0.28359368443489075
+      z: -1.3468506336212158
+    rotation:
+      x: 0.004834035411477089
+      y: 0.5290613174438477
+      z: -0.003013892099261284
+      w: 0.8485645651817322
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 363563362
+    frame_id: world_offset
+  child_frame_id: kinematic_2001
+  transform:
+    translation:
+      x: -7.296108245849609
+      y: -0.2809390425682068
+      z: -1.3469202518463135
+    rotation:
+      x: 0.01249513030052185
+      y: 0.5290125608444214
+      z: -0.007790416479110718
+      w: 0.8484863042831421
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 363563362
+    frame_id: world_offset
+  child_frame_id: kinematic_3006
+  transform:
+    translation:
+      x: -6.607862949371338
+      y: 0.1665739119052887
+      z: -2.806464672088623
+    rotation:
+      x: 0.30988985300064087
+      y: -0.32027289271354675
+      z: -0.6433008313179016
+      w: 0.6225414872169495
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 378343957
+    frame_id: world_offset
+  child_frame_id: kinematic_3004
+  transform:
+    translation:
+      x: -6.225828170776367
+      y: 0.15374638140201569
+      z: -2.6192164421081543
+    rotation:
+      x: 0.15701711177825928
+      y: -0.16230109333992004
+      z: -0.7000492811203003
+      w: 0.6774476170539856
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 389332040
+    frame_id: world_offset
+  child_frame_id: kinematic_1005
+  transform:
+    translation:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+    rotation:
+      x: -0.002416339237242937
+      y: -0.001334118191152811
+      z: -3.2236941933661e-06
+      w: 0.9999961853027344
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 389332040
+    frame_id: world_offset
+  child_frame_id: kinematic_3005
+  transform:
+    translation:
+      x: -6.005326271057129
+      y: 0.14418429136276245
+      z: -2.008477210998535
+    rotation:
+      x: 0.30988985300064087
+      y: -0.32027289271354675
+      z: -0.6433008313179016
+      w: 0.6225414872169495
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 400090317
+    frame_id: world_offset
+  child_frame_id: kinematic_1099
+  transform:
+    translation:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+    rotation:
+      x: -0.002416339237242937
+      y: -0.001334118191152811
+      z: -3.2236941933661e-06
+      w: 0.9999961853027344
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 400090317
+    frame_id: world_offset
+  child_frame_id: kinematic_3003
+  transform:
+    translation:
+      x: -6.627482891082764
+      y: -0.4357576072216034
+      z: -2.806342363357544
+    rotation:
+      x: 0.15701711177825928
+      y: -0.16230109333992004
+      z: -0.7000492811203003
+      w: 0.6774476170539856
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 414613671
+    frame_id: world_offset
+  child_frame_id: kinematic_2003
+  transform:
+    translation:
+      x: -6.935537815093994
+      y: 0.17459914088249207
+      z: -1.1699402332305908
+    rotation:
+      x: -0.3679999113082886
+      y: 0.3802453279495239
+      z: -0.6097737550735474
+      w: 0.5900556445121765
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 424051883
+    frame_id: world_offset
+  child_frame_id: kinematic_1005
+  transform:
+    translation:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+    rotation:
+      x: -0.002416339237242937
+      y: -0.001334118191152811
+      z: -3.2236941933661e-06
+      w: 0.9999961853027344
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 424051883
+    frame_id: world_offset
+  child_frame_id: kinematic_3005
+  transform:
+    translation:
+      x: -6.005269527435303
+      y: 0.14148956537246704
+      z: -2.0084805488586426
+    rotation:
+      x: 0.30988985300064087
+      y: -0.32027289271354675
+      z: -0.6433008313179016
+      w: 0.6225414872169495
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 433612033
+    frame_id: world_offset
+  child_frame_id: kinematic_2004
+  transform:
+    translation:
+      x: -6.935324668884277
+      y: 0.17259272933006287
+      z: -1.1700605154037476
+    rotation:
+      x: -0.3679999113082886
+      y: 0.3802453279495239
+      z: -0.6097737550735474
+      w: 0.5900556445121765
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 446340119
+    frame_id: world_offset
+  child_frame_id: kinematic_3105
+  transform:
+    translation:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+    rotation:
+      x: -0.002416339237242937
+      y: -0.001334118191152811
+      z: -3.2236941933661e-06
+      w: 0.9999961853027344
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 446340119
+    frame_id: world_offset
+  child_frame_id: kinematic_3001
+  transform:
+    translation:
+      x: -6.5880961418151855
+      y: 0.763321042060852
+      z: -2.8067121505737305
+    rotation:
+      x: 0.15704625844955444
+      y: -0.1623489260673523
+      z: -0.7000771164894104
+      w: 0.677400529384613
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 457999053
+    frame_id: world_offset
+  child_frame_id: kinematic_2001
+  transform:
+    translation:
+      x: -7.296048641204834
+      y: -0.2830837070941925
+      z: -1.3468581438064575
+    rotation:
+      x: 0.01249513030052185
+      y: 0.5290125608444214
+      z: -0.007790416479110718
+      w: 0.8484863042831421
+---
+transforms:
+- header:
+    stamp:
+      sec: 1776943519
+      nanosec: 457999053
+    frame_id: world_offset
+  child_frame_id: kinematic_3005
+  transform:
+    translation:
+      x: -6.0053391456604
+      y: 0.14469417929649353
+      z: -2.008500576019287
+    rotation:
+      x: 0.30988985300064087
+      y: -0.32027289271354675
+      z: -0.6433008313179016
+      w: 0.6225414872169495
+---

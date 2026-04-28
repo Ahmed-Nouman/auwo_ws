@@ -159,6 +159,12 @@ The digital twin launch **`auwo_twin.launch.py`** stays on the classic stack (tw
 
 *One block per calendar day, **reverse chronological order** (newest → oldest). Add a new `### YYYY-MM-DD` **immediately below this paragraph** when you log work.*
 
+### 2026-04-14 (ROS domain defaults for MoveIt launches)
+
+- Changed default **`ros_domain_id`** to **`0`** in **`excavator_moveit_config/launch/bucket_moveit.launch.py`**.
+- Changed default **`ros_domain_id`** to **`0`** in **`excavator_moveit_config/launch/demo_moveit_rviz.launch.py`**.
+- Updated launch-file header comments/docstrings to match the new default domain behavior.
+
 ### 2026-03-25 (MoveIt RViz execution, Gazebo pause, naming, environment mesh)
 
 - **MoveIt + RViz scene robot**: Added static **`world` → `base_link`** TF for SRDF virtual joint (`demo_moveit_rviz`, mock **`bucket_moveit`** path). **`excavator_gazebo`**: always publish **`excavator_world_tf`** at excavator spawn (not only `spawn_dumper`) so **`world`** exists without the dump-truck group. **`moveit.rviz`**: absolute **`/monitored_planning_scene`** and **`/display_planned_path`**.

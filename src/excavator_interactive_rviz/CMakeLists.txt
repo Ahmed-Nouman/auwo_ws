@@ -52,12 +52,17 @@ install(FILES plugin_description.xml
 install(PROGRAMS
   scripts/joint_imarkers.py
   scripts/twin_router_node.py
+  scripts/physical_tf_follower_node.py
   scripts/robot_description_topics.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
 # --- Launch files ---
 install(DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME}
+)
+
+install(DIRECTORY config
   DESTINATION share/${PROJECT_NAME}
 )
 

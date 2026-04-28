@@ -1,0 +1,38 @@
+namespace xcrtipcmsg.fb;
+
+table Scalar {
+    value:double;
+}
+
+table Vector2 {
+    x:float;
+    y:float;
+}
+
+table Vector3 {
+    x:float;
+    y:float;
+    z:float;
+}
+
+struct Vector3d {
+    x:double;
+    y:double;
+    z:double;
+}
+
+table Quat {
+    w:float;
+    x:float;
+    y:float;
+    z:float;
+}
+
+table Heading {
+    angle:double;
+}
+
+table Position {
+    latitude:double;
+    longitude:double;
+}

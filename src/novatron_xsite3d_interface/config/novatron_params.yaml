@@ -1,0 +1,7 @@
+kinematic_results_publisher_node:
+  ros__parameters:
+    mqtt_host: "192.168.0.158"
+    mqtt_port: 8884
+    mqtt_topic: "novatron/realtime-app/kinematicResults"
+    mqtt_username: "Friend"
+    mqtt_password: "comrade_1"

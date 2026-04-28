@@ -17,6 +17,7 @@ from rclpy.parameter import ParameterType  # PARAMETER_STRING = 4
 class RobotDescriptionTopicsNode(Node):
     def __init__(self):
         super().__init__("robot_description_topics")
+        self.declare_parameter("fallback_excavator_description", "")
         # Latched publisher so RViz gets the message when it subscribes late
         qos = QoSProfile(
             depth=1,
@@ -29,6 +30,9 @@ class RobotDescriptionTopicsNode(Node):
         self._done = False
         self._excavator_desc = None
         self._truck_desc = None
+        self._fallback_excavator_desc = self.get_parameter(
+            "fallback_excavator_description"
+        ).value
 
     def _republish(self):
         if self._excavator_desc:
@@ -59,6 +63,9 @@ class RobotDescriptionTopicsNode(Node):
         if self._done:
             return
         excavator_desc = self._get_param_from_node("robot_state_publisher", "robot_description")
+        if not excavator_desc and self._fallback_excavator_desc:
+            excavator_desc = self._fallback_excavator_desc
+            self.get_logger().info("Using fallback excavator robot_description from launch parameter")
         if excavator_desc:
             msg = String()
             msg.data = excavator_desc

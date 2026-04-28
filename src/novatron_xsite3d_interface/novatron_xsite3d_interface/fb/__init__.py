@@ -1,0 +1,1 @@
+# FlatBuffer schema bindings package

@@ -13,7 +13,7 @@ MoveIt + RViz with Gazebo Harmonic by default (excavator in sim + Plan/Execute).
   auwo_twin + MoveIt, use a separate launch or domain that connects only to the
   existing sim (avoid two /controller_manager).
 
-Defaults to ROS_DOMAIN_ID=42 like the demo.
+Defaults to ROS_DOMAIN_ID=0 (standard/default domain).
 """
 import os
 
@@ -408,7 +408,7 @@ def generate_launch_description():
         [
             DeclareLaunchArgument(
                 "ros_domain_id",
-                default_value="42",
+                default_value="0",
                 description="ROS domain for this stack.",
             ),
             SetEnvironmentVariable("ROS_DOMAIN_ID", LaunchConfiguration("ros_domain_id")),
