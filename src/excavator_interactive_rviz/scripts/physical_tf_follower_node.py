@@ -1,170 +1,232 @@
 #!/usr/bin/env python3
+"""
+physical_tf_follower_node.py  (v10 — correct mapping from absolute pitch analysis)
+===================================================================================
+Joint mapping confirmed from absolute orientation analysis of tf_dump:
+
+  BOOM   (1005→1003): PITCH  -75.6° to -56.1°  range=19.6°
+  STICK  (1005→1002): PITCH  -34.4° to +4.8°   range=39.2°  (absolute vs body)
+  BUCKET (1005→2001): PITCH  +39.5° to +89.4°  range=49.8°  (absolute vs body)
+  BODY   (world_offset→1000): YAW  0° (not moved in this bag)
+
+Key insight: stick and bucket are best measured as absolute pitch relative to
+the body frame (kinematic_1005), not as relative rotations between adjacent
+sensor frames which suffer from gimbal lock.
+"""
 
 import math
-from typing import Optional
+import numpy as np
 
 import rclpy
 from rclpy.node import Node
 
-from geometry_msgs.msg import TransformStamped
+import tf2_ros
+from tf2_ros import TransformException
+from geometry_msgs.msg import TransformStamped, Quaternion
 from sensor_msgs.msg import JointState
-from tf2_ros import Buffer, TransformBroadcaster, TransformListener
 
 
-def _normalize_angle(angle: float) -> float:
-    return math.atan2(math.sin(angle), math.cos(angle))
+def pitch_from_quat(q) -> float:
+    x, y, z, w = q.x, q.y, q.z, q.w
+    return math.atan2(
+        2.0*(w*y - z*x),
+        math.sqrt((1 - 2*(y*y + z*z))**2 + (2*(w*z + x*y))**2)
+    )
 
 
-def _yaw_from_quaternion(x: float, y: float, z: float, w: float) -> float:
-    siny_cosp = 2.0 * (w * z + x * y)
-    cosy_cosp = 1.0 - 2.0 * (y * y + z * z)
-    return math.atan2(siny_cosp, cosy_cosp)
+def yaw_from_quat(q) -> float:
+    x, y, z, w = q.x, q.y, q.z, q.w
+    return math.atan2(
+        2.0*(w*z + x*y),
+        1.0 - 2.0*(y*y + z*z)
+    )
+
+
+def continuous_angle(new_angle: float, prev_angle: float) -> float:
+    candidates = [
+        new_angle,
+        new_angle + 2*math.pi,
+        new_angle - 2*math.pi,
+    ]
+    return min(candidates, key=lambda a: abs(a - prev_angle))
+
+
+def rpy_to_quat(roll: float, pitch: float, yaw: float) -> Quaternion:
+    cr, sr = math.cos(roll/2),  math.sin(roll/2)
+    cp, sp = math.cos(pitch/2), math.sin(pitch/2)
+    cy, sy = math.cos(yaw/2),   math.sin(yaw/2)
+    q = Quaternion()
+    q.w = cr*cp*cy + sr*sp*sy
+    q.x = sr*cp*cy - cr*sp*sy
+    q.y = cr*sp*cy + sr*cp*sy
+    q.z = cr*cp*sy - sr*sp*cy
+    return q
 
 
 class PhysicalTfFollowerNode(Node):
-    """Convert Novatron TF stream to excavator joint states."""
 
-    def __init__(self) -> None:
-        super().__init__("physical_tf_follower_node")
+    def __init__(self):
+        super().__init__('physical_tf_follower_node')
 
-        # Frames from novatron_xsite3d_interface
-        self.declare_parameter("world_frame", "world_offset")
-        self.declare_parameter("base_frame", "kinematic_1005")
-        self.declare_parameter("boom_joint_frame", "kinematic_1003")
-        self.declare_parameter("stick_joint_frame", "kinematic_1002")
-        self.declare_parameter("bucket_joint_frame", "kinematic_1001")
+        self.declare_parameter('mirror_to_joint_states',   True)
+        self.declare_parameter('publish_world_to_base_tf', True)
+        self.declare_parameter('publish_rate',             30.0)
 
-        # Outputs
-        self.declare_parameter("publish_topic", "/physical_twin/state")
-        self.declare_parameter("mirror_to_joint_states", True)
-        self.declare_parameter("joint_states_topic", "/joint_states")
-        self.declare_parameter("publish_world_to_base_tf", True)
-        self.declare_parameter("base_link_frame", "base_link")
-        self.declare_parameter("publish_rate_hz", 30.0)
+        self.declare_parameter('frame_world_offset', 'world_offset')
+        self.declare_parameter('frame_body_6dof',    'kinematic_1005')
+        self.declare_parameter('frame_body_yaw',     'kinematic_1000')
+        self.declare_parameter('frame_boom',         'kinematic_1003')
+        self.declare_parameter('frame_stick',        'kinematic_1002')
+        self.declare_parameter('frame_bucket',       'kinematic_2001')
 
-        # Joint mapping knobs (different machines/installations can need sign/offset tuning)
-        self.declare_parameter("body_sign", 1.0)
-        self.declare_parameter("boom_sign", -1.0)
-        self.declare_parameter("stick_sign", -1.0)
-        self.declare_parameter("bucket_sign", -1.0)
+        self.declare_parameter('body_sign',   1.0)
+        self.declare_parameter('boom_sign',   1.0)
+        self.declare_parameter('stick_sign',  1.0)
+        self.declare_parameter('bucket_sign', 1.0)
+        self.declare_parameter('base_link_roll_correction', 0.0)
 
-        self.declare_parameter("body_offset", 0.0)
-        self.declare_parameter("boom_offset", -0.70)
-        self.declare_parameter("stick_offset", -1.26)
-        self.declare_parameter("bucket_offset", -1.12)
+        self._mirror    = self.get_parameter('mirror_to_joint_states').value
+        self._pub_world = self.get_parameter('publish_world_to_base_tf').value
+        rate_hz         = self.get_parameter('publish_rate').value
 
-        self.world_frame = self.get_parameter("world_frame").value
-        self.base_frame = self.get_parameter("base_frame").value
-        self.boom_joint_frame = self.get_parameter("boom_joint_frame").value
-        self.stick_joint_frame = self.get_parameter("stick_joint_frame").value
-        self.bucket_joint_frame = self.get_parameter("bucket_joint_frame").value
+        self._f_world  = self.get_parameter('frame_world_offset').value
+        self._f_body   = self.get_parameter('frame_body_6dof').value
+        self._f_yaw    = self.get_parameter('frame_body_yaw').value
+        self._f_boom   = self.get_parameter('frame_boom').value
+        self._f_stick  = self.get_parameter('frame_stick').value
+        self._f_bucket = self.get_parameter('frame_bucket').value
 
-        self.state_topic = self.get_parameter("publish_topic").value
-        self.mirror_to_joint_states = bool(self.get_parameter("mirror_to_joint_states").value)
-        self.joint_states_topic = self.get_parameter("joint_states_topic").value
-        self.publish_world_to_base_tf = bool(self.get_parameter("publish_world_to_base_tf").value)
-        self.base_link_frame = self.get_parameter("base_link_frame").value
+        self._s_body   = self.get_parameter('body_sign').value
+        self._s_boom   = self.get_parameter('boom_sign').value
+        self._s_stick  = self.get_parameter('stick_sign').value
+        self._s_bucket = self.get_parameter('bucket_sign').value
+        self._roll_corr = self.get_parameter('base_link_roll_correction').value
 
-        self.body_sign = float(self.get_parameter("body_sign").value)
-        self.boom_sign = float(self.get_parameter("boom_sign").value)
-        self.stick_sign = float(self.get_parameter("stick_sign").value)
-        self.bucket_sign = float(self.get_parameter("bucket_sign").value)
+        self._prev_body   = None
+        self._prev_boom   = None
+        self._prev_stick  = None
+        self._prev_bucket = None
 
-        self.body_offset = float(self.get_parameter("body_offset").value)
-        self.boom_offset = float(self.get_parameter("boom_offset").value)
-        self.stick_offset = float(self.get_parameter("stick_offset").value)
-        self.bucket_offset = float(self.get_parameter("bucket_offset").value)
+        self._tf_buffer      = tf2_ros.Buffer()
+        self._tf_listener    = tf2_ros.TransformListener(self._tf_buffer, self)
+        self._tf_broadcaster = tf2_ros.TransformBroadcaster(self)
 
-        rate_hz = float(self.get_parameter("publish_rate_hz").value)
-        self._timer_period = 1.0 / max(rate_hz, 1.0)
+        if self._mirror:
+            self._js_pub = self.create_publisher(JointState, '/joint_states', 10)
 
-        self.tf_buffer = Buffer()
-        self.tf_listener = TransformListener(self.tf_buffer, self)
-        self.tf_broadcaster = TransformBroadcaster(self)
+        self._timer = self.create_timer(1.0 / rate_hz, self._update)
 
-        self.physical_state_pub = self.create_publisher(JointState, self.state_topic, 10)
-        self.joint_states_pub = self.create_publisher(JointState, self.joint_states_topic, 10)
+        self.get_logger().info(
+            f"PhysicalTfFollowerNode v10 started\n"
+            f"  body:   {self._f_world}→{self._f_yaw}         (yaw)\n"
+            f"  boom:   {self._f_body}→{self._f_boom}  (pitch)\n"
+            f"  stick:  {self._f_body}→{self._f_stick}  (pitch vs body)\n"
+            f"  bucket: {self._f_body}→{self._f_bucket}  (pitch vs body)\n"
+            f"  signs: body={self._s_body} boom={self._s_boom} "
+            f"stick={self._s_stick} bucket={self._s_bucket}"
+        )
 
-        self.joint_names = [
-            "body_rotation",
-            "boom_rotation",
-            "stick_rotation",
-            "bucket_rotation",
-        ]
-
-        self.create_timer(self._timer_period, self._on_timer)
-        self.get_logger().info("Physical TF follower started.")
-
-    def _lookup(self, target: str, source: str) -> Optional[TransformStamped]:
+    def _lookup(self, parent: str, child: str):
         try:
-            return self.tf_buffer.lookup_transform(target, source, rclpy.time.Time())
-        except Exception:
+            return self._tf_buffer.lookup_transform(
+                parent, child, rclpy.time.Time()
+            )
+        except TransformException as e:
+            self.get_logger().warn(
+                f"TF {parent}→{child}: {e}",
+                throttle_duration_sec=5.0
+            )
             return None
 
-    def _on_timer(self) -> None:
-        t_world_to_base = self._lookup(self.world_frame, self.base_frame)
-        t_base_to_boom = self._lookup(self.base_frame, self.boom_joint_frame)
-        t_base_to_stick = self._lookup(self.base_frame, self.stick_joint_frame)
-        t_base_to_bucket = self._lookup(self.base_frame, self.bucket_joint_frame)
+    def _apply(self, raw, sign, prev):
+        raw = sign * raw
+        if prev is not None:
+            raw = continuous_angle(raw, prev)
+        return raw
 
-        if None in (t_world_to_base, t_base_to_boom, t_base_to_stick, t_base_to_bucket):
-            return
-
-        q_base = t_world_to_base.transform.rotation
-        base_yaw_world = _yaw_from_quaternion(q_base.x, q_base.y, q_base.z, q_base.w)
-
-        # Work in body yaw frame so boom/stick pitch is independent of global heading.
-        c = math.cos(-base_yaw_world)
-        s = math.sin(-base_yaw_world)
-
-        p_boom = t_base_to_boom.transform.translation
-        p_stick = t_base_to_stick.transform.translation
-        p_bucket = t_base_to_bucket.transform.translation
-
-        v_boom_x = p_stick.x - p_boom.x
-        v_boom_y = p_stick.y - p_boom.y
-        v_boom_z = p_stick.z - p_boom.z
-
-        v_stick_x = p_bucket.x - p_stick.x
-        v_stick_y = p_bucket.y - p_stick.y
-        v_stick_z = p_bucket.z - p_stick.z
-
-        boom_x_body = c * v_boom_x - s * v_boom_y
-        stick_x_body = c * v_stick_x - s * v_stick_y
-
-        boom_pitch_abs = math.atan2(v_boom_z, boom_x_body)
-        stick_pitch_abs = math.atan2(v_stick_z, stick_x_body)
-        stick_pitch_rel = _normalize_angle(stick_pitch_abs - boom_pitch_abs)
-
-        q_bucket = t_base_to_bucket.transform.rotation
-        bucket_yaw = _yaw_from_quaternion(q_bucket.x, q_bucket.y, q_bucket.z, q_bucket.w)
-        bucket_pitch_rel = _normalize_angle(bucket_yaw - stick_pitch_abs)
-
-        body = self.body_sign * base_yaw_world + self.body_offset
-        boom = self.boom_sign * boom_pitch_abs + self.boom_offset
-        stick = self.stick_sign * stick_pitch_rel + self.stick_offset
-        bucket = self.bucket_sign * bucket_pitch_rel + self.bucket_offset
-
+    def _update(self):
         now = self.get_clock().now().to_msg()
-        js = JointState()
-        js.header.stamp = now
-        js.name = self.joint_names
-        js.position = [body, boom, stick, bucket]
 
-        self.physical_state_pub.publish(js)
-        if self.mirror_to_joint_states:
-            self.joint_states_pub.publish(js)
+        # body_rotation — yaw of kinematic_1000 in world_offset
+        body_tf = self._lookup(self._f_world, self._f_yaw)
+        body_yaw = None
+        if body_tf:
+            body_yaw = self._apply(
+                yaw_from_quat(body_tf.transform.rotation),
+                self._s_body, self._prev_body)
+            self._prev_body = body_yaw
 
-        if self.publish_world_to_base_tf:
-            tf_msg = TransformStamped()
-            tf_msg.header.stamp = now
-            tf_msg.header.frame_id = self.world_frame
-            tf_msg.child_frame_id = self.base_link_frame
-            tf_msg.transform = t_world_to_base.transform
-            self.tf_broadcaster.sendTransform(tf_msg)
+        # boom_rotation — pitch of kinematic_1003 relative to kinematic_1005
+        boom_tf = self._lookup(self._f_body, self._f_boom)
+        boom_angle = None
+        if boom_tf:
+            boom_angle = self._apply(
+                pitch_from_quat(boom_tf.transform.rotation),
+                self._s_boom, self._prev_boom)
+            self._prev_boom = boom_angle
+
+        # stick_rotation — pitch of kinematic_1002 relative to kinematic_1005
+        # (absolute vs body avoids gimbal lock from adjacent frame lookup)
+        stick_tf = self._lookup(self._f_body, self._f_stick)
+        stick_angle = None
+        if stick_tf:
+            stick_angle = self._apply(
+                pitch_from_quat(stick_tf.transform.rotation),
+                self._s_stick, self._prev_stick)
+            self._prev_stick = stick_angle
+
+        # bucket_rotation — pitch of kinematic_2001 relative to kinematic_1005
+        # (quick coupler frame, absolute vs body — confirmed 50° range of motion)
+        bucket_tf = self._lookup(self._f_body, self._f_bucket)
+        bucket_angle = None
+        if bucket_tf:
+            bucket_angle = self._apply(
+                pitch_from_quat(bucket_tf.transform.rotation),
+                self._s_bucket, self._prev_bucket)
+            self._prev_bucket = bucket_angle
+
+        # publish /joint_states
+        if self._mirror:
+            js = JointState()
+            js.header.stamp = now
+            joints, positions = [], []
+
+            if body_yaw    is not None: joints.append('body_rotation');   positions.append(body_yaw)
+            if boom_angle  is not None: joints.append('boom_rotation');   positions.append(boom_angle)
+            if stick_angle is not None: joints.append('stick_rotation');  positions.append(stick_angle)
+            if bucket_angle is not None:joints.append('bucket_rotation'); positions.append(bucket_angle)
+
+            if joints:
+                js.name     = joints
+                js.position = positions
+                js.velocity = [0.0] * len(joints)
+                js.effort   = [0.0] * len(joints)
+                self._js_pub.publish(js)
+
+                self.get_logger().info(
+                    f"body={math.degrees(body_yaw):.1f}°  "
+                    f"boom={math.degrees(boom_angle):.1f}°  "
+                    f"stick={math.degrees(stick_angle):.1f}°  "
+                    f"bucket={math.degrees(bucket_angle):.1f}°",
+                    throttle_duration_sec=1.0
+                )
+
+        # publish world → base_link
+        if self._pub_world:
+            b = self._lookup(self._f_world, self._f_body)
+            if b:
+                body_world_yaw = yaw_from_quat(b.transform.rotation)
+                t = TransformStamped()
+                t.header.stamp    = now
+                t.header.frame_id = 'world'
+                t.child_frame_id  = 'base_link'
+                t.transform.translation = b.transform.translation
+                t.transform.rotation = rpy_to_quat(
+                    self._roll_corr, 0.0, body_world_yaw)
+                self._tf_broadcaster.sendTransform(t)
 
 
-def main(args=None) -> None:
+def main(args=None):
     rclpy.init(args=args)
     node = PhysicalTfFollowerNode()
     try:
@@ -173,11 +235,9 @@ def main(args=None) -> None:
         pass
     finally:
         node.destroy_node()
-        try:
+        if rclpy.ok():
             rclpy.shutdown()
-        except Exception:
-            pass
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

@@ -41,7 +41,6 @@ def generate_launch_description():
     model         = LaunchConfiguration("model")
     use_sim_time  = LaunchConfiguration("use_sim_time")
     use_demo_pose = LaunchConfiguration("use_demo_pose")
-    use_novatron  = LaunchConfiguration("use_novatron")
 
     # MQTT connection parameters as CLI-overridable arguments so the launch
     # file works even without a novatron_params.yaml file on disk.
@@ -146,62 +145,16 @@ def generate_launch_description():
                     "'", use_gazebo,    "'.lower() not in ('true','1')",
                     " and '", use_demo_pose, "'.lower() not in ('true','1')",
                 ]),
+                "use_sim_time": use_sim_time,
+                "mirror_to_joint_states": True,
+                "body_sign":   1.0,
+                "boom_sign":   1.0,
+                "stick_sign":  1.0,
+                "bucket_sign": 1.0,
             },
         ],
     )
 
-    # ────────────────────────────────────────────────────────────────────────
-    # NOVATRON KINEMATIC PUBLISHER
-    #
-    # FIX: novatron_params.yaml did not exist, causing mqtt_port to fall back
-    # to the node default of 0, which paho rejects with "Invalid port number".
-    # MQTT parameters are now passed directly as node parameters in this launch
-    # file, so no external yaml file is needed. Override any of them on the
-    # command line:
-    #   ros2 launch ... mqtt_host:=192.168.4.232 mqtt_port:=8884
-    #
-    # sensor_id_to_frame maps documented Novatron IDs (from package README)
-    # to descriptive frame names. "novatron_" prefix keeps them visually
-    # distinct from URDF links in RViz's TF display.
-    # Undocumented IDs (1011, 1099, 2106, 2511, 3004, 3006, 3101, 3105)
-    # fall back to kinematic_XXXX automatically — no entry needed for them.
-    # ────────────────────────────────────────────────────────────────────────
-    novatron_node = Node(
-        package="novatron_xsite3d_interface",
-        executable="kinematic_results_publisher_node",
-        name="kinematic_results_publisher_node",
-        output="screen",
-        parameters=[{
-            "mqtt_host":     mqtt_host,
-            "mqtt_port":     mqtt_port,
-            "mqtt_topic":    mqtt_topic,
-            "mqtt_username": mqtt_username,
-            "mqtt_password": mqtt_password,
-            "sensor_id_to_frame": [
-                # ── Body / base ──────────────────────────────────────────
-                "1000:novatron_body_yaw",    # rotation axis, yaw only
-                "1005:novatron_body_6dof",   # full 6DOF — primary body pose
-
-                # ── Arm chain ────────────────────────────────────────────
-                "1003:novatron_boom_joint",  # boom_rotation in URDF
-                "1002:novatron_stick_joint", # stick_rotation in URDF
-                "1001:novatron_bucket_joint",# bucket_rotation in URDF
-
-                # ── Attachment (tilt-rotator / quick coupler) ────────────
-                "2001:novatron_quick_coupler",
-                "2002:novatron_tilt_base",
-                "2003:novatron_tilt_joint",
-                "2004:novatron_rotator_joint",
-
-                # ── Bucket blade measurement points ──────────────────────
-                "3001:novatron_blade_left",
-                "3002:novatron_blade_center",
-                "3003:novatron_blade_right",
-                "3005:novatron_blade_bottom",
-            ],
-        }],
-        condition=IfCondition(use_novatron),
-    )
 
     # ────────────────────────────────────────────────────────────────────────
     # DEMO MODE NODES  (use_demo_pose:=true only)
@@ -245,16 +198,17 @@ def generate_launch_description():
     # (bumped from 4 s to account for the 2 s robot_description_topics delay)
     # ────────────────────────────────────────────────────────────────────────
     rviz_config = PathJoinSubstitution(
-        [FindPackageShare("excavator_description"), "config", "view.rviz"]
+        [FindPackageShare("excavator_description"), "config", "auwo_physical_twin.rviz"]
     )
     rviz = Node(
         package="rviz2",
         executable="rviz2",
         name="auwo_physical_twin_rviz",
         arguments=["-d", rviz_config],
+        parameters=[{"use_sim_time": use_sim_time}],
         output="screen",
     )
-    rviz_delayed = TimerAction(period=5.0, actions=[rviz])
+    rviz_delayed = TimerAction(period=8.0, actions=[rviz])
 
     # ────────────────────────────────────────────────────────────────────────
     # GAZEBO-ONLY NODES  (use_gazebo:=true only)
@@ -351,15 +305,15 @@ def generate_launch_description():
         DeclareLaunchArgument("model",         default_value=default_model,
             description="Excavator URDF/Xacro path."),
         DeclareLaunchArgument("use_sim_time",
-            default_value=PythonExpression(["'", use_gazebo, "'.lower() in ('true','1')"]),
-            description="Use Gazebo /clock. Auto-derived from use_gazebo."),
+            default_value=PythonExpression([
+                "'true' if '", use_gazebo, "'.lower() in ('true','1') else 'true'"
+            ]),
+            description="Always true. Bag runs with --clock, Novatron publishes /clock."),
 
         # FIX: was 'true' — caused static TF to override live Novatron data.
         DeclareLaunchArgument("use_demo_pose", default_value="false",
             description="true=static demo pose  false=live Novatron (default)."),
 
-        DeclareLaunchArgument("use_novatron",  default_value="true",
-            description="true=start MQTT publisher  false=skip (offline/Gazebo only)."),
 
         # MQTT parameters — set these to match your Xsite3D network config.
         # Defaults match the values in the novatron_xsite3d_interface README.
@@ -375,14 +329,14 @@ def generate_launch_description():
         DeclareLaunchArgument("mqtt_password", default_value="password",
             description="MQTT broker password."),
 
-        # ── Core ─────────────────────────────────────────────────────────────
-        rsp,
+        # ── Core — delayed 3 s so /clock from bag is established first ────────
+        TimerAction(period=3.0, actions=[
+            rsp,
+            twin_router_node,
+            physical_tf_follower,
+        ]),
         robot_description_topics,   # delayed 2 s — see comment on node def
-        twin_router_node,
-        physical_tf_follower,
 
-        # ── Novatron ─────────────────────────────────────────────────────────
-        novatron_node,
 
         # ── Demo mode ────────────────────────────────────────────────────────
         demo_joint_states,

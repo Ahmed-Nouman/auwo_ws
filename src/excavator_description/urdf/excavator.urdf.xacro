@@ -20,7 +20,7 @@
       <geometry>
         <mesh filename="package://excavator_description/meshes/base.dae"/>
       </geometry>
-      <origin xyz="0 0 0"/>
+      <origin xyz="0 0 0" />
     </visual>
     <collision>
       <geometry>
@@ -40,7 +40,7 @@
       <geometry>
         <mesh filename="package://excavator_description/meshes/body.dae"/>
       </geometry>
-      <origin xyz="0 0 0"/>
+      <origin xyz="0 0 0" />
     </visual>
     <collision>
       <geometry>
@@ -60,7 +60,7 @@
       <geometry>
         <mesh filename="package://excavator_description/meshes/boom.dae"/>
       </geometry>
-      <origin xyz="0 0 0"/>
+      <origin xyz="0 0 0" />
     </visual>
     <collision>
       <geometry>
@@ -80,7 +80,7 @@
       <geometry>
         <mesh filename="package://excavator_description/meshes/stick.dae"/>
       </geometry>
-      <origin xyz="0 0 0"/>
+      <origin xyz="0 0 0" />
     </visual>
     <collision>
       <geometry>
@@ -100,7 +100,7 @@
       <geometry>
         <mesh filename="package://excavator_description/meshes/bucket.dae"/>
       </geometry>
-      <origin xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 3.14159 0"/>
     </visual>
     <collision>
       <geometry>
@@ -136,7 +136,7 @@
     </inertial>
     <visual name="lidar_base">
       <geometry><cylinder radius="0.08" length="0.04"/></geometry>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 3.14159"/>
       <material name="lidar_base_material">
         <color rgba="0.1 0.5 0.85 1"/>
       </material>
@@ -158,7 +158,7 @@
   <joint name="base_to_base_link" type="fixed">
     <parent link="base_link"/>
     <child link="base"/>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <origin xyz="0 0 0" rpy="0 0 3.14159"/>
   </joint>
 
   <!-- Joints with damping/friction and stronger limits -->
@@ -180,7 +180,7 @@
     <axis xyz="0 1 0"/>
     <origin xyz="0.933 -0.134 0.302"/>
     <dynamics damping="10.0" friction="1.5"/>
-    <limit effort="4000.0" lower="-1.308" upper="-0.087" velocity="1.0"/>
+    <limit effort="4000.0" lower="-1.40" upper="0.20" velocity="1.0"/>
   </joint>
 
   <joint name="stick_rotation" type="revolute">
@@ -189,7 +189,7 @@
     <axis xyz="0 1 0"/>
     <origin xyz="2.586 0 -0.625"/>
     <dynamics damping="8.0" friction="1.2"/>
-    <limit effort="3500.0" lower="-2.428" upper="-0.085" velocity="1.0"/>
+    <limit effort="3500.0" lower="-2.428" upper="0.20" velocity="1.0"/>
   </joint>
 
   <joint name="bucket_rotation" type="revolute">
@@ -199,7 +199,7 @@
     <origin xyz="-1.362 0 -0.154"/>
     <dynamics damping="6.0" friction="0.8"/>
     <!-- Upper relaxed toward 0: gz/joint_states often ~-0.01 rad; tight upper=-0.357 made CheckStartStateBounds fail. -->
-    <limit effort="3000.0" lower="-2.60" upper="0.35" velocity="1.2"/>
+    <limit effort="3000.0" lower="-2.00" upper="2.00" velocity="1.2"/>
   </joint>
 
   <!-- Body -> sensor links (fixed, above cab) -->

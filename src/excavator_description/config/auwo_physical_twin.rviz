@@ -1,0 +1,267 @@
+Panels:
+  - Class: rviz_common/Displays
+    Help Height: 70
+    Name: Displays
+    Property Tree Widget:
+      Expanded:
+        - /Excavator1
+        - /TF1
+        - /TF1/Tree1
+        - /TF1/Tree1/world1
+        - /TF1/Tree1/world1/base_link1
+        - /TF1/Tree1/world1/base_link1/base1
+        - /TF1/Tree1/world1/base_link1/base1/body1
+        - /TF1/Tree1/world1/base_link1/base1/body1/boom1
+        - /TF1/Tree1/world1/base_link1/base1/body1/boom1/stick1
+      Splitter Ratio: 0.7401130199432373
+    Tree Height: 783
+  - Class: excavator_interactive_rviz/PresetPosesPanel
+    Name: PresetPosesPanel
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Alpha: 1
+      Class: rviz_default_plugins/RobotModel
+      Collision Enabled: false
+      Description File: ""
+      Description Source: Topic
+      Description Topic:
+        Depth: 5
+        Durability Policy: Transient Local
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /robot_description
+      Enabled: true
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: Links in Alphabetic Order
+        base:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        body:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        boom:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        bucket:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        sensor_imu_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        sensor_lidar_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        stick:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+      Mass Properties:
+        Inertia: false
+        Mass: false
+      Name: Excavator
+      TF Prefix: ""
+      Update Interval: 0
+      Value: true
+      Visual Enabled: true
+    - Class: rviz_default_plugins/TF
+      Enabled: true
+      Filter (blacklist): ""
+      Filter (whitelist): ""
+      Frame Timeout: 15
+      Frames:
+        All Enabled: true
+        base:
+          Value: true
+        base_link:
+          Value: true
+        body:
+          Value: true
+        boom:
+          Value: true
+        bucket:
+          Value: true
+        kinematic_1000:
+          Value: true
+        kinematic_1001:
+          Value: true
+        kinematic_1002:
+          Value: true
+        kinematic_1003:
+          Value: true
+        kinematic_1005:
+          Value: true
+        kinematic_1011:
+          Value: true
+        kinematic_1099:
+          Value: true
+        kinematic_2001:
+          Value: true
+        kinematic_2002:
+          Value: true
+        kinematic_2003:
+          Value: true
+        kinematic_2004:
+          Value: true
+        kinematic_2106:
+          Value: true
+        kinematic_2511:
+          Value: true
+        kinematic_3001:
+          Value: true
+        kinematic_3002:
+          Value: true
+        kinematic_3003:
+          Value: true
+        kinematic_3004:
+          Value: true
+        kinematic_3005:
+          Value: true
+        kinematic_3006:
+          Value: true
+        kinematic_3101:
+          Value: true
+        kinematic_3105:
+          Value: true
+        sensor_imu_link:
+          Value: true
+        sensor_lidar_link:
+          Value: true
+        stick:
+          Value: true
+        world:
+          Value: true
+        world_offset:
+          Value: true
+      Marker Scale: 1
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: true
+      Tree:
+        world:
+          base_link:
+            base:
+              body:
+                boom:
+                  stick:
+                    bucket:
+                      {}
+                sensor_imu_link:
+                  {}
+                sensor_lidar_link:
+                  {}
+          world_offset:
+            kinematic_1000:
+              {}
+            kinematic_1001:
+              {}
+            kinematic_1002:
+              {}
+            kinematic_1003:
+              {}
+            kinematic_1005:
+              {}
+            kinematic_1011:
+              {}
+            kinematic_1099:
+              {}
+            kinematic_2001:
+              {}
+            kinematic_2002:
+              {}
+            kinematic_2003:
+              {}
+            kinematic_2004:
+              {}
+            kinematic_2106:
+              {}
+            kinematic_2511:
+              {}
+            kinematic_3001:
+              {}
+            kinematic_3002:
+              {}
+            kinematic_3003:
+              {}
+            kinematic_3004:
+              {}
+            kinematic_3005:
+              {}
+            kinematic_3006:
+              {}
+            kinematic_3101:
+              {}
+            kinematic_3105:
+              {}
+      Update Interval: 0
+      Value: true
+  Enabled: true
+  Global Options:
+    Background Color: 48; 48; 48
+    Fixed Frame: world
+    Frame Rate: 30
+  Name: root
+  Tools:
+    - Class: rviz_default_plugins/Interact
+      Hide Inactive Objects: true
+  Transformation:
+    Current:
+      Class: rviz_default_plugins/TF
+  Value: true
+  Views:
+    Current:
+      Class: rviz_default_plugins/Orbit
+      Distance: 10
+      Enable Stereo Rendering:
+        Stereo Eye Separation: 0.05999999865889549
+        Stereo Focal Distance: 1
+        Swap Stereo Eyes: false
+        Value: false
+      Focal Point:
+        X: 0
+        Y: 0
+        Z: 0
+      Focal Shape Fixed Size: true
+      Focal Shape Size: 0.05000000074505806
+      Invert Z Axis: false
+      Name: Current View
+      Near Clip Distance: 0.009999999776482582
+      Pitch: 0.38539859652519226
+      Target Frame: world
+      Value: Orbit (rviz_default_plugins)
+      Yaw: 1.6203974485397339
+    Saved: ~
+Window Geometry:
+  Displays:
+    collapsed: false
+  Height: 1011
+  Hide Left Dock: false
+  Hide Right Dock: false
+  PresetPosesPanel:
+    collapsed: false
+  QMainWindow State: 000000ff00000000fd00000001000000000000016400000395fc0200000002fb000000100044006900730070006c006100790073010000003f00000395000000cc00fffffffb000000200050007200650073006500740050006f00730065007300500061006e0065006c00000002ea000000ea000000ea00ffffff000005d40000039500000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Width: 1854
+  X: 66
+  Y: 32
