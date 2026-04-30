@@ -45,13 +45,20 @@ class RobotDescriptionTopicsNode(Node):
             self.pub_truck.publish(msg)
 
     def _get_param_from_node(self, node_name: str, param_name: str):
+        import threading
         client = self.create_client(GetParameters, f"/{node_name}/get_parameters")
         if not client.wait_for_service(timeout_sec=2.0):
             return None
         req = GetParameters.Request()
         req.names = [param_name]
         future = client.call_async(req)
-        rclpy.spin_until_future_complete(self, future, timeout_sec=2.0)
+        # Use threading event instead of spin_until_future_complete
+        # to avoid "Executor is already spinning" error
+        event = threading.Event()
+        def done_callback(f):
+            event.set()
+        future.add_done_callback(done_callback)
+        event.wait(timeout=2.0)
         if not future.done() or not future.result():
             return None
         res = future.result()

@@ -85,6 +85,13 @@ class PhysicalTfFollowerNode(Node):
         self.declare_parameter('bucket_sign', 1.0)
         self.declare_parameter('base_link_roll_correction', 0.0)
 
+        # boom_offset: corrects the position after negating boom pitch.
+        # Formula: URDF_boom = -novatron_pitch + boom_offset
+        # Default = 2 * bag-data midpoint (-65.85° = -1.149 rad) = -2.30 rad.
+        # Fine-tune: set boom_offset = 2 * (current novatron boom reading)
+        # if the rest position looks slightly off.
+        self.declare_parameter('boom_offset', -2.30)
+
         self._mirror    = self.get_parameter('mirror_to_joint_states').value
         self._pub_world = self.get_parameter('publish_world_to_base_tf').value
         rate_hz         = self.get_parameter('publish_rate').value
@@ -101,6 +108,7 @@ class PhysicalTfFollowerNode(Node):
         self._s_stick  = self.get_parameter('stick_sign').value
         self._s_bucket = self.get_parameter('bucket_sign').value
         self._roll_corr = self.get_parameter('base_link_roll_correction').value
+        self._boom_offset = self.get_parameter('boom_offset').value
 
         self._prev_body   = None
         self._prev_boom   = None
@@ -156,12 +164,16 @@ class PhysicalTfFollowerNode(Node):
                 self._s_body, self._prev_body)
             self._prev_body = body_yaw
 
-        # boom_rotation — pitch of kinematic_1003 relative to kinematic_1005
+        # boom_rotation — Novatron ENU pitch convention is opposite to the URDF
+        # Y-axis joint direction: physically raising the boom makes the Novatron
+        # pitch less negative, but the URDF needs it more negative to go up.
+        # Fix: negate the pitch and add boom_offset to restore correct position.
+        # URDF_boom = -novatron_pitch + boom_offset
         boom_tf = self._lookup(self._f_body, self._f_boom)
         boom_angle = None
         if boom_tf:
             boom_angle = self._apply(
-                pitch_from_quat(boom_tf.transform.rotation),
+                -pitch_from_quat(boom_tf.transform.rotation) + self._boom_offset,
                 self._s_boom, self._prev_boom)
             self._prev_boom = boom_angle
 
@@ -203,13 +215,16 @@ class PhysicalTfFollowerNode(Node):
                 js.effort   = [0.0] * len(joints)
                 self._js_pub.publish(js)
 
-                self.get_logger().info(
-                    f"body={math.degrees(body_yaw):.1f}°  "
-                    f"boom={math.degrees(boom_angle):.1f}°  "
-                    f"stick={math.degrees(stick_angle):.1f}°  "
-                    f"bucket={math.degrees(bucket_angle):.1f}°",
-                    throttle_duration_sec=1.0
-                )
+                parts = []
+                if body_yaw    is not None: parts.append(f"body={math.degrees(body_yaw):.1f}°")
+                if boom_angle  is not None: parts.append(f"boom={math.degrees(boom_angle):.1f}°")
+                if stick_angle is not None: parts.append(f"stick={math.degrees(stick_angle):.1f}°")
+                if bucket_angle is not None: parts.append(f"bucket={math.degrees(bucket_angle):.1f}°")
+                if parts:
+                    self.get_logger().info(
+                        "  ".join(parts),
+                        throttle_duration_sec=1.0
+                    )
 
         # publish world → base_link
         if self._pub_world:

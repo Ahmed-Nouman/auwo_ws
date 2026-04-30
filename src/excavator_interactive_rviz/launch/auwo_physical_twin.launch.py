@@ -306,7 +306,7 @@ def generate_launch_description():
             description="Excavator URDF/Xacro path."),
         DeclareLaunchArgument("use_sim_time",
             default_value=PythonExpression([
-                "'true' if '", use_gazebo, "'.lower() in ('true','1') else 'true'"
+                "'true' if '", use_gazebo, "'.lower() in ('true','1') else 'false'"
             ]),
             description="Always true. Bag runs with --clock, Novatron publishes /clock."),
 
@@ -329,12 +329,19 @@ def generate_launch_description():
         DeclareLaunchArgument("mqtt_password", default_value="password",
             description="MQTT broker password."),
 
-        # ── Core — delayed 3 s so /clock from bag is established first ────────
-        TimerAction(period=3.0, actions=[
-            rsp,
-            twin_router_node,
-            physical_tf_follower,
-        ]),
+        # ── Core — delayed 3 s when use_sim_time=true so /clock from bag is
+        # established before nodes start. In live mode (use_sim_time=false)
+        # fires almost immediately (0.1 s).
+        TimerAction(
+            period=PythonExpression([
+                "3.0 if '", use_sim_time, "'.lower() in ('true','1') else 0.1"
+            ]),
+            actions=[
+                rsp,
+                twin_router_node,
+                physical_tf_follower,
+            ],
+        ),
         robot_description_topics,   # delayed 2 s — see comment on node def
 
 
