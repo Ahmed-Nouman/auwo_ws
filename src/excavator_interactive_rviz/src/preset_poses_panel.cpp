@@ -111,13 +111,13 @@ public:
 
     // --- Preset definitions -----------------------------------------------
     // joint order: [body_rotation, boom_rotation, stick_rotation, bucket_rotation]
-    presets_.push_back({"Idle",      {0.0,  -1.0,  -1.5,  -1.0}});
-    presets_.push_back({"Dig",       {0.0,  -0.8,  -2.0,  -2.2}});
-    presets_.push_back({"Dump",      {1.2,  -1.2,  -0.4,  -0.6}});
+    presets_.push_back({"Idle",      {-0.339,  -0.639,  -0.809,  -0.660}});
+    presets_.push_back({"Dig",       {-3.192,  -0.509,  -1.760,  -1.690}});
+    presets_.push_back({"Dump",      {0.611,  -1.210,  -1.760,  -1.632}});
     presets_.push_back({"Transport", {0.0,  -1.2,  -1.2,  -1.5}});
 
     // Work cycle: Idle -> Dig -> Transport -> Dump (loop)
-    cycle_sequence_ = {0, 1, 3, 2};
+    cycle_sequence_ = {0, 3, 1, 3, 2, 3};
 
     // --- ROS 2 node + pub/sub ---------------------------------------------
     node_ = rclcpp::Node::make_shared("excavator_preset_panel");

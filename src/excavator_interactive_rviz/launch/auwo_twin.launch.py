@@ -83,7 +83,7 @@ def generate_launch_description():
     # FIX: was 4.0s — not enough. Now 15s (controllers finish ~12s + buffer).
     # -------------------------------------------------------------------------
     rviz_config = PathJoinSubstitution(
-        [FindPackageShare("excavator_description"), "config", "view.rviz"]
+        [FindPackageShare("excavator_description"), "config", "auwo_twin.rviz"]
     )
     rviz = Node(
         package="rviz2",
