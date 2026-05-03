@@ -6,9 +6,10 @@ Panels:
       Expanded:
         - /Excavator1
         - /TF1
+        - /TF1/Frames1
         - /TF1/Tree1
       Splitter Ratio: 0.7401130199432373
-    Tree Height: 783
+    Tree Height: 1303
   - Class: excavator_interactive_rviz/PresetPosesPanel
     Name: PresetPosesPanel
 Visualization Manager:
@@ -252,28 +253,28 @@ Visualization Manager:
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0
-        Y: 0
-        Z: 0
+        X: -0.21644392609596252
+        Y: 0.9149808287620544
+        Z: 0.8810102939605713
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.38539859652519226
+      Pitch: 0.6847963929176331
       Target Frame: world
       Value: Orbit (rviz_default_plugins)
-      Yaw: 1.6203974485397339
+      Yaw: 1.5553975105285645
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 1011
+  Height: 1531
   Hide Left Dock: false
   Hide Right Dock: false
   PresetPosesPanel:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd00000001000000000000016400000395fc0200000002fb000000100044006900730070006c006100790073010000003f00000395000000cc00fffffffb000000200050007200650073006500740050006f00730065007300500061006e0065006c00000002ea000000ea000000ea00ffffff000005d40000039500000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
-  Width: 1854
+  QMainWindow State: 000000ff00000000fd0000000100000000000001640000059dfc0200000002fb000000100044006900730070006c006100790073010000003f0000059d000000cc00fffffffb000000200050007200650073006500740050006f00730065007300500061006e0065006c00000002ea000000ea000000ea00ffffff000008540000059d00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Width: 2494
   X: 66
   Y: 32
